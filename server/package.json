@@ -1,0 +1,14 @@
+{
+  "name": "jiekai-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "start": "bun src/index.ts",
+    "db:migrate": "bun src/migrate.ts"
+  },
+  "dependencies": {
+    "hono": "^4.7.0"
+  }
+}

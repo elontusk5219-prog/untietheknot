@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>解开那束结 RUBEN25/26</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0a0a0c;
+  --text: #e8e4df;
+  --dim: #6b6560;
+  --accent: #c4956a;
+  --card-bg: #141416;
+  --border: #2a2a2e;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Serif SC', 'Source Han Serif SC', serif;
+  line-height: 1.8;
+  overflow-x: hidden;
+}
+
+/* --- HERO --- */
+.hero {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(196,149,106,0.08) 0%, transparent 70%);
+}
+
+.hero h1 {
+  font-size: clamp(2rem, 6vw, 4.5rem);
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  margin-bottom: 0.5em;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  height: 60vh;
+  max-height: 500px;
+}
+
+.hero .subtitle {
+  font-size: 0.9rem;
+  color: var(--dim);
+  letter-spacing: 0.3em;
+  margin-top: 1em;
+}
+
+.hero .scroll-hint {
+  position: absolute;
+  bottom: 2rem;
+  color: var(--dim);
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.8; }
+}
+
+/* --- TRACKLIST --- */
+.tracklist {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 6rem;
+}
+
+.track {
+  margin-bottom: 6rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 4rem;
+}
+
+.track:last-child { border-bottom: none; }
+
+.track-header {
+  display: flex;
+  align-items: baseline;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.track-num {
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--accent);
+  opacity: 0.5;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.track-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.track-feat {
+  font-size: 0.85rem;
+  color: var(--dim);
+  margin-left: 0.5em;
+}
+
+/* --- AUDIO PLAYER --- */
+.player {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 1rem 1.5rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.play-btn {
+  width: 40px;
+  height: 40px;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  background: none;
+  color: var(--accent);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.play-btn:hover { background: rgba(196,149,106,0.15); }
+
+.play-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+.progress-wrap {
+  flex: 1;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  cursor: pointer;
+  position: relative;
+}
+
+.progress-bar {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  width: 0%;
+  transition: width 0.1s linear;
+}
+
+.time-display {
+  font-size: 0.75rem;
+  color: var(--dim);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* --- CONCEPT ART GRID --- */
+.concepts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.concept-img {
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  border: 1px solid var(--border);
+}
+
+.concept-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+
+.concept-img:hover img { transform: scale(1.05); }
+
+.concept-img .label {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0.5rem 0.8rem;
+  background: linear-gradient(transparent, rgba(0,0,0,0.8));
+  font-size: 0.7rem;
+  color: var(--dim);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.concept-img:hover .label { opacity: 1; }
+
+/* --- ANNOTATION --- */
+.annotation {
+  font-size: 0.85rem;
+  color: var(--dim);
+  line-height: 1.9;
+  max-width: 700px;
+  margin-top: 1.5rem;
+  padding-left: 1rem;
+  border-left: 2px solid var(--border);
+}
+
+/* --- LIGHTBOX --- */
+.lightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0,0,0,0.95);
+  justify-content: center;
+  align-items: center;
+  cursor: zoom-out;
+}
+
+.lightbox.active { display: flex; }
+
+.lightbox img {
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+/* --- SUPPLEMENTARY SECTION --- */
+.supplementary {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 6rem;
+}
+
+.supplementary h2 {
+  font-size: 1.3rem;
+  color: var(--dim);
+  margin-bottom: 2rem;
+  letter-spacing: 0.1em;
+}
+
+.supp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.8rem;
+}
+
+/* --- FOOTER --- */
+.footer {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: var(--dim);
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  border-top: 1px solid var(--border);
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 600px) {
+  .track-header { flex-direction: column; gap: 0.5rem; }
+  .track-num { font-size: 2rem; }
+  .track-title { font-size: 1.2rem; }
+  .concepts { grid-template-columns: repeat(2, 1fr); }
+  .hero h1 { height: 45vh; }
+}
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <h1>解开那束结</h1>
+  <div class="subtitle">RUBEN25/26 — 沈士钧</div>
+  <div class="scroll-hint">SCROLL</div>
+</section>
+
+<main class="tracklist" id="tracklist"></main>
+
+<section class="supplementary">
+  <h2>补充场景</h2>
+  <div id="supp-storyboard">
+    <h3 style="color:var(--dim);font-size:0.9rem;margin:1.5rem 0 1rem;letter-spacing:0.1em;">分镜 · 电瓶车</h3>
+    <div class="supp-grid" id="grid-storyboard"></div>
+  </div>
+  <div id="supp-wild" style="margin-top:3rem;">
+    <h3 style="color:var(--dim);font-size:0.9rem;margin:1.5rem 0 1rem;letter-spacing:0.1em;">放飞 · Wild</h3>
+    <div class="supp-grid" id="grid-wild"></div>
+  </div>
+  <div id="supp-daylight" style="margin-top:3rem;">
+    <h3 style="color:var(--dim);font-size:0.9rem;margin:1.5rem 0 1rem;letter-spacing:0.1em;">白天与城市</h3>
+    <div class="supp-grid" id="grid-daylight"></div>
+  </div>
+  <div id="supp-urban" style="margin-top:3rem;">
+    <h3 style="color:var(--dim);font-size:0.9rem;margin:1.5rem 0 1rem;letter-spacing:0.1em;">城铁与咖啡馆</h3>
+    <div class="supp-grid" id="grid-urban"></div>
+  </div>
+</section>
+
+<footer class="footer">
+  解开那束结 RUBEN25/26 · 概念视觉书<br>
+  Fatal Frame V CG · gpt-image-2
+</footer>
+
+<div class="lightbox" id="lightbox">
+  <img id="lightbox-img" src="" alt="">
+</div>
+
+<script>
+const TRACKS = [
+  {
+    num: '01', title: '解开那束结', feat: '',
+    images: ['t01_jiekai_v1_gpt2.png','t01b_jiekai_gpt2.png','t01c_jiekai_gpt2.png','t01d_jiekai_gpt2.png'],
+    annotation: '一对互相早已失去热情的情侣。依旧会为对方系鞋带，但没有人去提这件事。委婉是把双刃剑。',
+    scene: '入口曲 — 解结/进入记忆的洞穴'
+  },
+  {
+    num: '02', title: 'Flight To Paris', feat: '直飞巴黎',
+    images: ['t02_paris_v1_gpt2.png','t02b_paris_gpt2.png','t02c_paris_gpt2.png','t02d_paris_gpt2.png'],
+    annotation: '一位信奉传统男性特征的男人想追求某人，但既不风度翩翩又不油嘴滑舌，最后只能破罐子破摔。',
+    scene: '飞机飞出来 + 机舱小屏播 DV 风格视频'
+  },
+  {
+    num: '03', title: '蜂蜜', feat: 'feat. jolae & Jeriyaki',
+    images: ['t03_honey_v1_gpt2.png','t03b_honey_gpt2.png','t03c_honey_gpt2.png','t03d_honey_gpt2.png'],
+    annotation: '亲密关系里的一方不辞而别，与很歇斯底里地想留下某人。失去日常惯例的无助感。',
+    scene: '蜂蜜色的温暖记忆碎片'
+  },
+  {
+    num: '04', title: '象形文字', feat: '',
+    images: ['t04_hieroglyph_v1_gpt2.png','t04b_hieroglyph_gpt2.png','t04c_hieroglyph_gpt2.png','t04d_hieroglyph_gpt2.png'],
+    annotation: '平淡日常中的一束光，无法被言语诠释的情感。梦境永存。',
+    scene: '恐怖故事 — 午夜凶铃/零的游戏质感'
+  },
+  {
+    num: '05', title: '捕风捉影', feat: 'feat. 马马魚子',
+    images: ['t05_catch_wind_v1_gpt2.png','t05b_catch_wind_gpt2.png','t05c_catch_wind_gpt2.png','t05d_catch_wind_gpt2.png'],
+    annotation: '割舍永远是一件难事。意识到自己的不足但又不被其击垮也需要勇气。误判花期，妄想了永远。',
+    scene: '城市中一个女孩和另一个金发短发女孩的故事'
+  },
+  {
+    num: '06', title: '得到你的爱', feat: 'feat. LimboLimbs & G3GE',
+    images: ['t06_love_v1_gpt2.png','t06b_love_gpt2.png','t06c_love_gpt2.png','t06d_love_gpt2.png'],
+    annotation: 'Bigbang/Justin Bieber式的无忧无虑小情歌。但器乐outro暗示着转折。',
+    scene: '音游/跳舞机 — 有排行榜的节奏游戏'
+  },
+  {
+    num: '07', title: '新咒语', feat: '',
+    images: ['t07_spell_v1_gpt2.png','t07b_spell_gpt2.png','t07c_spell_gpt2.png','t07d_spell_gpt2.png'],
+    annotation: '纯音乐。',
+    scene: '烟花大会 — 点击绽放烟花'
+  },
+  {
+    num: '08', title: '吉卜力音乐', feat: '未完成demo',
+    images: ['t08_ghibli_v1_gpt2.png','t08b_ghibli_gpt2.png','t08c_ghibli_gpt2.png','t08d_ghibli_gpt2.png'],
+    annotation: '关于放手，关于自洽。省下了根烟，明天也一样昏暗。尼古丁不再住唇间。',
+    scene: '嗑药幻觉 — 用户画小符号上传 UGC'
+  },
+  {
+    num: '09', title: '销声匿迹', feat: 'feat. hpsb & jackzebra',
+    images: ['t09_vanish_v1_gpt2.png','t09b_vanish_gpt2.png','t09c_vanish_gpt2.png','t09d_vanish_gpt2.png'],
+    annotation: '反乌托邦世界里的两人。得尽可能得隐晦，抛下一切世俗。哪里有我，哪里就会有她。',
+    scene: '机器人和女孩在雪地里 — 消失的故事'
+  },
+  {
+    num: '10', title: 'Dream Big', feat: '做大梦',
+    images: ['t10_dream_v1_gpt2.png','t10b_dream_gpt2.png','t10c_dream_gpt2.png','t10d_dream_gpt2.png'],
+    annotation: '攀比心与嫉妒。我虚荣给谁看？以歌曲为载体的心理治疗。',
+    scene: '秋天梧桐大道 — 电瓶车穿过金色落叶'
+  },
+  {
+    num: '11', title: '你跳着舞，我唱着歌', feat: '',
+    images: ['t11_nightcar_v1_gpt2.png','t11b_nightcar_gpt2.png','t11c_nightcar_gpt2.png','t11d_nightcar_gpt2.png'],
+    annotation: '琐碎的随笔。急于求成，害怕麻烦。不能放下笔，得继续创作下去，得有耐心。',
+    scene: '公路片/夜车 — 曾轶可《夜车》的感觉'
+  },
+  {
+    num: '12', title: '看完花火再回', feat: '',
+    images: ['t12_fireworks_v1_gpt2.png','t12b_fireworks_gpt2.png','t12c_fireworks_gpt2.png','t12d_fireworks_gpt2.png'],
+    annotation: '一直在跑，从未停下过。休息的机会是很宝贵的。看完这场烟火再打车。休息好了就继续奔跑吧。',
+    scene: '分屏设计 — 过去与现在，两个自己重合在烟花前'
+  }
+];
+
+const SUPP = {
+  storyboard: [
+    '06_shot_A_wide_v1_gpt2.png','06_shot_A_wide_v2_gpt2.png','06_shot_A_wide_v3_gpt2.png','06_shot_A_wide_v4_gpt2.png',
+    '07_shot_B_crying_v1_gpt2.png','07_shot_B_crying_v2_gpt2.png','07_shot_B_crying_v3_gpt2.png',
+    '08_shot_C_plane_v1_gpt2.png','08_shot_C_plane_v2_gpt2.png','08_shot_C_plane_v3_gpt2.png','08_shot_C_plane_v4_gpt2.png','08_shot_C_plane_v5_gpt2.png',
+    '09_shot_D_phone_v1_gpt2.png','09_shot_D_phone_v2_gpt2.png','09_shot_D_phone_v3_gpt2.png',
+    '10_shot_E_wipe_v1_gpt2.png','10_shot_E_wipe_v2_gpt2.png','10_shot_E_wipe_v3_gpt2.png',
+    '11_puddle_v1_gpt2.png','12_overpass_v1_gpt2.png','13_streetlight_v1_gpt2.png',
+    '14_hair_v1_gpt2.png','15_hands_v1_gpt2.png','16_intersection_v1_gpt2.png',
+    '17_behind_close_v1_gpt2.png','18_scarf_wind_v1_gpt2.png'
+  ],
+  wild: ['w01_bathtub_gpt2.png','w02_vending_gpt2.png','w03_escalator_gpt2.png','w04_phonebooth_gpt2.png',
+    'w05_laundry_gpt2.png','w06_aquarium_gpt2.png','w07_ferriswheel_gpt2.png','w08_mirror_gpt2.png',
+    'w09_rain_gpt2.png','w10_rooftop_gpt2.png','w11_construction_gpt2.png','w12_hospital_gpt2.png'],
+  daylight: ['d01_rooftop_noon_gpt2.png','d02_bus_afternoon_gpt2.png','d03_market_morning_gpt2.png',
+    'd04_overpass_golden_gpt2.png','d05_pool_hall_gpt2.png','d06_rain_city_gpt2.png',
+    'd07_classroom_gpt2.png','d08_bridge_sunset_gpt2.png','d09_laundry_morning_gpt2.png',
+    'd10_park_bench_gpt2.png','d11_bicycle_dawn_gpt2.png','d12_swimming_pool_gpt2.png'],
+  urban: ['u01_metro_platform_gpt2.png','u02_metro_window_gpt2.png','u03_metro_exit_gpt2.png',
+    'u04_cafe_window_gpt2.png','u05_cafe_counter_gpt2.png','u06_cafe_rain_gpt2.png',
+    'u07_tram_gpt2.png','u08_tram_night_gpt2.png','u09_bookstore_gpt2.png',
+    'u10_rooftop_city_gpt2.png','u11_station_farewell_gpt2.png','u12_convenience_dawn_gpt2.png']
+};
+
+// --- RENDER ---
+const tracklist = document.getElementById('tracklist');
+let currentAudio = null;
+let currentBtn = null;
+
+TRACKS.forEach((t, i) => {
+  const div = document.createElement('div');
+  div.className = 'track';
+  div.id = `track-${t.num}`;
+  div.innerHTML = `
+    <div class="track-header">
+      <span class="track-num">${t.num}</span>
+      <span class="track-title">${t.title}</span>
+      ${t.feat ? `<span class="track-feat">${t.feat}</span>` : ''}
+    </div>
+    <div class="player" data-track="${t.num}">
+      <button class="play-btn" data-src="audio/${t.num}_${encodeURIComponent(getAudioFilename(t))}">
+        <svg viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19"/></svg>
+      </button>
+      <div class="progress-wrap"><div class="progress-bar"></div></div>
+      <span class="time-display">0:00 / --:--</span>
+    </div>
+    <div style="font-size:0.8rem;color:var(--dim);margin-bottom:1.5rem;letter-spacing:0.05em;">${t.scene}</div>
+    <div class="concepts">
+      ${t.images.map(img => `
+        <div class="concept-img" data-full="images/${img}">
+          <img src="images/${img}" alt="${t.title}" loading="lazy">
+          <div class="label">${img.replace('_gpt2.png','').replace(/_/g,' ')}</div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="annotation">${t.annotation}</div>
+  `;
+  tracklist.appendChild(div);
+});
+
+function getAudioFilename(t) {
+  const map = {
+    '01': '解开那束结.mp3',
+    '02': 'Flight To Paris (直飞巴黎).mp3',
+    '03': '蜂蜜 (feat. jolae & Jeriyaki).mp3',
+    '04': '象形文字.mp3',
+    '05': '捕风捉影 (feat. 马马魚子).mp3',
+    '06': '得到你的爱 (feat. LimboLimbs & G3GE).mp3',
+    '07': '新咒语.mp3',
+    '08': '吉卜力音乐.mp3',
+    '09': '销声匿迹 (feat. hpsb & jackzebra).mp3',
+    '10': 'Dream Big (做大梦).mp3',
+    '11': '你跳着舞 我唱着歌.mp3',
+    '12': '看完花火再回.mp3'
+  };
+  return map[t.num] || '';
+}
+
+// Supplementary grids
+Object.entries(SUPP).forEach(([key, imgs]) => {
+  const grid = document.getElementById(`grid-${key}`);
+  if (!grid) return;
+  imgs.forEach(img => {
+    const d = document.createElement('div');
+    d.className = 'concept-img';
+    d.dataset.full = `images/${img}`;
+    d.innerHTML = `<img src="images/${img}" alt="${img}" loading="lazy"><div class="label">${img.replace('_gpt2.png','').replace(/_/g,' ')}</div>`;
+    grid.appendChild(d);
+  });
+});
+
+// --- AUDIO PLAYER ---
+document.querySelectorAll('.play-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const src = decodeURIComponent(btn.dataset.src);
+    const player = btn.closest('.player');
+    const progressBar = player.querySelector('.progress-bar');
+    const timeDisplay = player.querySelector('.time-display');
+
+    if (currentAudio && currentBtn === btn) {
+      if (currentAudio.paused) {
+        currentAudio.play();
+        btn.innerHTML = '<svg viewBox="0 0 24 24"><rect x="7" y="5" width="3" height="14"/><rect x="14" y="5" width="3" height="14"/></svg>';
+      } else {
+        currentAudio.pause();
+        btn.innerHTML = '<svg viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19"/></svg>';
+      }
+      return;
+    }
+
+    if (currentAudio) {
+      currentAudio.pause();
+      if (currentBtn) currentBtn.innerHTML = '<svg viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19"/></svg>';
+    }
+
+    currentAudio = new Audio(src);
+    currentBtn = btn;
+    currentAudio.play();
+    btn.innerHTML = '<svg viewBox="0 0 24 24"><rect x="7" y="5" width="3" height="14"/><rect x="14" y="5" width="3" height="14"/></svg>';
+
+    currentAudio.addEventListener('timeupdate', () => {
+      const pct = (currentAudio.currentTime / currentAudio.duration) * 100;
+      progressBar.style.width = pct + '%';
+      timeDisplay.textContent = `${fmt(currentAudio.currentTime)} / ${fmt(currentAudio.duration)}`;
+    });
+
+    currentAudio.addEventListener('ended', () => {
+      btn.innerHTML = '<svg viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19"/></svg>';
+      progressBar.style.width = '0%';
+    });
+
+    player.querySelector('.progress-wrap').addEventListener('click', e => {
+      if (!currentAudio || currentBtn !== btn) return;
+      const rect = e.currentTarget.getBoundingClientRect();
+      const pct = (e.clientX - rect.left) / rect.width;
+      currentAudio.currentTime = pct * currentAudio.duration;
+    });
+  });
+});
+
+function fmt(s) {
+  if (!s || isNaN(s)) return '--:--';
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return `${m}:${sec.toString().padStart(2, '0')}`;
+}
+
+// --- LIGHTBOX ---
+const lightbox = document.getElementById('lightbox');
+const lightboxImg = document.getElementById('lightbox-img');
+
+document.addEventListener('click', e => {
+  const card = e.target.closest('.concept-img');
+  if (card) {
+    lightboxImg.src = card.dataset.full;
+    lightbox.classList.add('active');
+  }
+});
+
+lightbox.addEventListener('click', () => {
+  lightbox.classList.remove('active');
+  lightboxImg.src = '';
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    lightbox.classList.remove('active');
+    lightboxImg.src = '';
+  }
+});
+</script>
+</body>
+</html>
