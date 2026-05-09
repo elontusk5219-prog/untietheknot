@@ -16,6 +16,8 @@
   --accent: #c4956a;
   --card-bg: #141416;
   --border: #2a2a2e;
+  --edit-bg: rgba(196,149,106,0.06);
+  --green: #6bbd7a;
 }
 
 html { scroll-behavior: smooth; }
@@ -28,7 +30,6 @@ body {
   overflow-x: hidden;
 }
 
-/* --- HERO --- */
 .hero {
   height: 100vh;
   display: flex;
@@ -37,7 +38,6 @@ body {
   align-items: center;
   text-align: center;
   position: relative;
-  overflow: hidden;
 }
 
 .hero::before {
@@ -58,382 +58,260 @@ body {
   max-height: 500px;
 }
 
-.hero .subtitle {
-  font-size: 0.9rem;
-  color: var(--dim);
-  letter-spacing: 0.3em;
-  margin-top: 1em;
-}
+.hero .subtitle { font-size: 0.9rem; color: var(--dim); letter-spacing: 0.3em; margin-top: 1em; }
+.hero .scroll-hint { position: absolute; bottom: 2rem; color: var(--dim); font-size: 0.75rem; letter-spacing: 0.2em; animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.8; } }
 
-.hero .scroll-hint {
-  position: absolute;
-  bottom: 2rem;
-  color: var(--dim);
-  font-size: 0.75rem;
-  letter-spacing: 0.2em;
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 0.8; }
-}
-
-/* --- TRACKLIST --- */
-.tracklist {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem 1.5rem 6rem;
-}
-
-.track {
-  margin-bottom: 6rem;
+/* Status bar */
+.status-bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 900;
+  padding: 0.4rem 1rem;
+  background: rgba(10,10,12,0.9);
+  backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--border);
-  padding-bottom: 4rem;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 0.7rem; color: var(--dim);
 }
 
+.status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 0.4em; }
+.status-dot.on { background: var(--green); }
+.status-dot.off { background: #e44; }
+
+.tracklist { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem 6rem; }
+
+.track { margin-bottom: 6rem; border-bottom: 1px solid var(--border); padding-bottom: 4rem; }
 .track:last-child { border-bottom: none; }
 
-.track-header {
-  display: flex;
-  align-items: baseline;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+.track-header { display: flex; align-items: baseline; gap: 1.5rem; margin-bottom: 2rem; }
+.track-num { font-size: 3rem; font-weight: 700; color: var(--accent); opacity: 0.5; line-height: 1; }
+.track-title { font-size: 1.5rem; font-weight: 700; }
+.track-feat { font-size: 0.85rem; color: var(--dim); margin-left: 0.5em; }
+
+/* Editable fields */
+[contenteditable] {
+  outline: none;
+  border-radius: 4px;
+  transition: background 0.2s, box-shadow 0.2s;
+  padding: 2px 4px;
+  margin: -2px -4px;
 }
 
-.track-num {
-  font-size: 3rem;
-  font-weight: 700;
-  color: var(--accent);
-  opacity: 0.5;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
+[contenteditable]:hover { background: var(--edit-bg); }
+[contenteditable]:focus { background: var(--edit-bg); box-shadow: 0 0 0 1px var(--accent); }
 
-.track-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-}
-
-.track-feat {
-  font-size: 0.85rem;
-  color: var(--dim);
+.save-indicator {
+  display: inline-block;
+  font-size: 0.65rem;
+  color: var(--green);
+  opacity: 0;
+  transition: opacity 0.3s;
   margin-left: 0.5em;
 }
 
-/* --- AUDIO PLAYER --- */
-.player {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  padding: 1rem 1.5rem;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-}
+.save-indicator.show { opacity: 1; }
 
-.play-btn {
-  width: 40px;
-  height: 40px;
-  border: 2px solid var(--accent);
-  border-radius: 50%;
-  background: none;
-  color: var(--accent);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: background 0.2s;
-}
-
+/* Player */
+.player { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; padding: 0.8rem 1.2rem; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; }
+.play-btn { width: 36px; height: 36px; border: 2px solid var(--accent); border-radius: 50%; background: none; color: var(--accent); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .play-btn:hover { background: rgba(196,149,106,0.15); }
+.play-btn svg { width: 14px; height: 14px; fill: currentColor; }
+.progress-wrap { flex: 1; height: 4px; background: var(--border); border-radius: 2px; cursor: pointer; }
+.progress-bar { height: 100%; background: var(--accent); border-radius: 2px; width: 0%; }
+.time-display { font-size: 0.7rem; color: var(--dim); font-variant-numeric: tabular-nums; white-space: nowrap; }
 
-.play-btn svg { width: 16px; height: 16px; fill: currentColor; }
+/* Scene & annotation */
+.scene-line { font-size: 0.8rem; color: var(--dim); margin-bottom: 1.5rem; letter-spacing: 0.05em; }
+.annotation { font-size: 0.85rem; color: var(--dim); line-height: 1.9; max-width: 700px; margin-top: 1.5rem; padding-left: 1rem; border-left: 2px solid var(--border); }
 
-.progress-wrap {
-  flex: 1;
-  height: 4px;
-  background: var(--border);
-  border-radius: 2px;
-  cursor: pointer;
-  position: relative;
-}
-
-.progress-bar {
-  height: 100%;
-  background: var(--accent);
-  border-radius: 2px;
-  width: 0%;
-  transition: width 0.1s linear;
-}
-
-.time-display {
-  font-size: 0.75rem;
-  color: var(--dim);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-/* --- CONCEPT ART GRID --- */
-.concepts {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.concept-img {
-  aspect-ratio: 1;
-  overflow: hidden;
-  border-radius: 6px;
-  cursor: pointer;
-  position: relative;
-  border: 1px solid var(--border);
-}
-
-.concept-img img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.6s ease;
-}
-
+/* Concept art grid */
+.concepts { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+.concept-img { aspect-ratio: 1; overflow: hidden; border-radius: 6px; cursor: pointer; position: relative; border: 1px solid var(--border); }
+.concept-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; }
 .concept-img:hover img { transform: scale(1.05); }
-
-.concept-img .label {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 0.5rem 0.8rem;
-  background: linear-gradient(transparent, rgba(0,0,0,0.8));
-  font-size: 0.7rem;
-  color: var(--dim);
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
+.concept-img .label { position: absolute; bottom: 0; left: 0; right: 0; padding: 0.5rem 0.8rem; background: linear-gradient(transparent, rgba(0,0,0,0.8)); font-size: 0.65rem; color: var(--dim); opacity: 0; transition: opacity 0.3s; }
 .concept-img:hover .label { opacity: 1; }
 
-/* --- ANNOTATION --- */
-.annotation {
-  font-size: 0.85rem;
+/* Upload area */
+.upload-area { margin-top: 1.5rem; }
+.upload-btn {
+  display: inline-flex; align-items: center; gap: 0.4em;
+  padding: 0.5rem 1rem;
+  background: none;
+  border: 1px dashed var(--dim);
   color: var(--dim);
-  line-height: 1.9;
-  max-width: 700px;
-  margin-top: 1.5rem;
-  padding-left: 1rem;
-  border-left: 2px solid var(--border);
-}
-
-/* --- LIGHTBOX --- */
-.lightbox {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  background: rgba(0,0,0,0.95);
-  justify-content: center;
-  align-items: center;
-  cursor: zoom-out;
-}
-
-.lightbox.active { display: flex; }
-
-.lightbox img {
-  max-width: 90vw;
-  max-height: 90vh;
-  object-fit: contain;
-  border-radius: 4px;
-}
-
-/* --- SUPPLEMENTARY SECTION --- */
-.supplementary {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem 1.5rem 6rem;
-}
-
-.supplementary h2 {
-  font-size: 1.3rem;
-  color: var(--dim);
-  margin-bottom: 2rem;
-  letter-spacing: 0.1em;
-}
-
-.supp-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 0.8rem;
-}
-
-/* --- FOOTER --- */
-.footer {
-  text-align: center;
-  padding: 3rem 1.5rem;
-  color: var(--dim);
+  border-radius: 6px;
+  cursor: pointer;
   font-size: 0.75rem;
-  letter-spacing: 0.15em;
-  border-top: 1px solid var(--border);
+  font-family: inherit;
+  transition: border-color 0.2s, color 0.2s;
 }
+.upload-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-/* --- RESPONSIVE --- */
+.uploads-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.8rem; margin-top: 1rem; }
+.upload-card { position: relative; border-radius: 6px; overflow: hidden; border: 1px solid var(--border); }
+.upload-card img { width: 100%; aspect-ratio: 1; object-fit: cover; cursor: pointer; }
+.upload-card .caption { padding: 0.4rem 0.6rem; font-size: 0.7rem; color: var(--dim); background: var(--card-bg); }
+.upload-card .delete-btn { position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; border-radius: 50%; border: none; background: rgba(0,0,0,0.7); color: #e44; font-size: 12px; cursor: pointer; display: none; align-items: center; justify-content: center; }
+.upload-card:hover .delete-btn { display: flex; }
+
+/* Notes */
+.notes-section { margin-top: 2rem; }
+.notes-title { font-size: 0.8rem; color: var(--dim); margin-bottom: 0.8rem; }
+.note-input-row { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+.note-input { flex: 1; background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 0.5rem 0.8rem; color: var(--text); font-family: inherit; font-size: 0.8rem; outline: none; }
+.note-input:focus { border-color: var(--accent); }
+.note-input::placeholder { color: #444; }
+.note-send { padding: 0.5rem 1rem; background: var(--accent); color: var(--bg); border: none; border-radius: 6px; font-family: inherit; font-size: 0.8rem; cursor: pointer; }
+.note-send:hover { opacity: 0.85; }
+.note-list { list-style: none; }
+.note-item { padding: 0.6rem 0; border-bottom: 1px solid var(--border); font-size: 0.8rem; display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+.note-item:last-child { border-bottom: none; }
+.note-text { flex: 1; color: var(--text); }
+.note-meta { font-size: 0.65rem; color: var(--dim); white-space: nowrap; }
+.note-del { background: none; border: none; color: #e44; cursor: pointer; font-size: 0.7rem; margin-left: 0.5rem; }
+
+/* Supplementary */
+.supplementary { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem 6rem; }
+.supplementary h2 { font-size: 1.3rem; color: var(--dim); margin-bottom: 2rem; letter-spacing: 0.1em; }
+.supp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.8rem; }
+
+/* Lightbox */
+.lightbox { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.95); justify-content: center; align-items: center; cursor: zoom-out; }
+.lightbox.active { display: flex; }
+.lightbox img { max-width: 90vw; max-height: 90vh; object-fit: contain; border-radius: 4px; }
+
+.footer { text-align: center; padding: 3rem 1.5rem; color: var(--dim); font-size: 0.75rem; letter-spacing: 0.15em; border-top: 1px solid var(--border); }
+
 @media (max-width: 600px) {
   .track-header { flex-direction: column; gap: 0.5rem; }
   .track-num { font-size: 2rem; }
   .track-title { font-size: 1.2rem; }
   .concepts { grid-template-columns: repeat(2, 1fr); }
+  .uploads-grid { grid-template-columns: repeat(2, 1fr); }
   .hero h1 { height: 45vh; }
+  .status-bar { font-size: 0.6rem; }
 }
 </style>
 </head>
 <body>
 
+<div class="status-bar">
+  <span><span class="status-dot" id="dot"></span> <span id="status-text">连接中...</span></span>
+  <span id="last-save"></span>
+</div>
+
 <section class="hero">
   <h1>解开那束结</h1>
   <div class="subtitle">RUBEN25/26 — 沈士钧</div>
-  <div class="scroll-hint">SCROLL</div>
+  <div class="scroll-hint">SCROLL · 点击文字可编辑</div>
 </section>
 
 <main class="tracklist" id="tracklist"></main>
 
 <section class="supplementary">
   <h2>补充场景</h2>
-  <div id="supp-storyboard">
-    <h3 style="color:var(--dim);font-size:0.9rem;margin:1.5rem 0 1rem;letter-spacing:0.1em;">分镜 · 电瓶车</h3>
-    <div class="supp-grid" id="grid-storyboard"></div>
-  </div>
-  <div id="supp-wild" style="margin-top:3rem;">
-    <h3 style="color:var(--dim);font-size:0.9rem;margin:1.5rem 0 1rem;letter-spacing:0.1em;">放飞 · Wild</h3>
-    <div class="supp-grid" id="grid-wild"></div>
-  </div>
-  <div id="supp-daylight" style="margin-top:3rem;">
-    <h3 style="color:var(--dim);font-size:0.9rem;margin:1.5rem 0 1rem;letter-spacing:0.1em;">白天与城市</h3>
-    <div class="supp-grid" id="grid-daylight"></div>
-  </div>
-  <div id="supp-urban" style="margin-top:3rem;">
-    <h3 style="color:var(--dim);font-size:0.9rem;margin:1.5rem 0 1rem;letter-spacing:0.1em;">城铁与咖啡馆</h3>
-    <div class="supp-grid" id="grid-urban"></div>
-  </div>
+  <div><h3 style="color:var(--dim);font-size:0.9rem;margin:1.5rem 0 1rem;">分镜 · 电瓶车</h3><div class="supp-grid" id="grid-storyboard"></div></div>
+  <div style="margin-top:3rem;"><h3 style="color:var(--dim);font-size:0.9rem;margin:1.5rem 0 1rem;">放飞 · Wild</h3><div class="supp-grid" id="grid-wild"></div></div>
+  <div style="margin-top:3rem;"><h3 style="color:var(--dim);font-size:0.9rem;margin:1.5rem 0 1rem;">白天与城市</h3><div class="supp-grid" id="grid-daylight"></div></div>
+  <div style="margin-top:3rem;"><h3 style="color:var(--dim);font-size:0.9rem;margin:1.5rem 0 1rem;">城铁与咖啡馆</h3><div class="supp-grid" id="grid-urban"></div></div>
 </section>
 
-<footer class="footer">
-  解开那束结 RUBEN25/26 · 概念视觉书<br>
-  Fatal Frame V CG · gpt-image-2
-</footer>
+<footer class="footer">解开那束结 RUBEN25/26 · 概念视觉书</footer>
 
-<div class="lightbox" id="lightbox">
-  <img id="lightbox-img" src="" alt="">
-</div>
+<div class="lightbox" id="lightbox"><img id="lightbox-img" src="" alt=""></div>
 
 <script>
 const TRACKS = [
-  {
-    num: '01', title: '解开那束结', feat: '',
-    images: ['t01_jiekai_v1_gpt2.png','t01b_jiekai_gpt2.png','t01c_jiekai_gpt2.png','t01d_jiekai_gpt2.png'],
-    annotation: '一对互相早已失去热情的情侣。依旧会为对方系鞋带，但没有人去提这件事。委婉是把双刃剑。',
-    scene: '入口曲 — 解结/进入记忆的洞穴'
-  },
-  {
-    num: '02', title: 'Flight To Paris', feat: '直飞巴黎',
-    images: ['t02_paris_v1_gpt2.png','t02b_paris_gpt2.png','t02c_paris_gpt2.png','t02d_paris_gpt2.png'],
-    annotation: '一位信奉传统男性特征的男人想追求某人，但既不风度翩翩又不油嘴滑舌，最后只能破罐子破摔。',
-    scene: '飞机飞出来 + 机舱小屏播 DV 风格视频'
-  },
-  {
-    num: '03', title: '蜂蜜', feat: 'feat. jolae & Jeriyaki',
-    images: ['t03_honey_v1_gpt2.png','t03b_honey_gpt2.png','t03c_honey_gpt2.png','t03d_honey_gpt2.png'],
-    annotation: '亲密关系里的一方不辞而别，与很歇斯底里地想留下某人。失去日常惯例的无助感。',
-    scene: '蜂蜜色的温暖记忆碎片'
-  },
-  {
-    num: '04', title: '象形文字', feat: '',
-    images: ['t04_hieroglyph_v1_gpt2.png','t04b_hieroglyph_gpt2.png','t04c_hieroglyph_gpt2.png','t04d_hieroglyph_gpt2.png'],
-    annotation: '平淡日常中的一束光，无法被言语诠释的情感。梦境永存。',
-    scene: '恐怖故事 — 午夜凶铃/零的游戏质感'
-  },
-  {
-    num: '05', title: '捕风捉影', feat: 'feat. 马马魚子',
-    images: ['t05_catch_wind_v1_gpt2.png','t05b_catch_wind_gpt2.png','t05c_catch_wind_gpt2.png','t05d_catch_wind_gpt2.png'],
-    annotation: '割舍永远是一件难事。意识到自己的不足但又不被其击垮也需要勇气。误判花期，妄想了永远。',
-    scene: '城市中一个女孩和另一个金发短发女孩的故事'
-  },
-  {
-    num: '06', title: '得到你的爱', feat: 'feat. LimboLimbs & G3GE',
-    images: ['t06_love_v1_gpt2.png','t06b_love_gpt2.png','t06c_love_gpt2.png','t06d_love_gpt2.png'],
-    annotation: 'Bigbang/Justin Bieber式的无忧无虑小情歌。但器乐outro暗示着转折。',
-    scene: '音游/跳舞机 — 有排行榜的节奏游戏'
-  },
-  {
-    num: '07', title: '新咒语', feat: '',
-    images: ['t07_spell_v1_gpt2.png','t07b_spell_gpt2.png','t07c_spell_gpt2.png','t07d_spell_gpt2.png'],
-    annotation: '纯音乐。',
-    scene: '烟花大会 — 点击绽放烟花'
-  },
-  {
-    num: '08', title: '吉卜力音乐', feat: '未完成demo',
-    images: ['t08_ghibli_v1_gpt2.png','t08b_ghibli_gpt2.png','t08c_ghibli_gpt2.png','t08d_ghibli_gpt2.png'],
-    annotation: '关于放手，关于自洽。省下了根烟，明天也一样昏暗。尼古丁不再住唇间。',
-    scene: '嗑药幻觉 — 用户画小符号上传 UGC'
-  },
-  {
-    num: '09', title: '销声匿迹', feat: 'feat. hpsb & jackzebra',
-    images: ['t09_vanish_v1_gpt2.png','t09b_vanish_gpt2.png','t09c_vanish_gpt2.png','t09d_vanish_gpt2.png'],
-    annotation: '反乌托邦世界里的两人。得尽可能得隐晦，抛下一切世俗。哪里有我，哪里就会有她。',
-    scene: '机器人和女孩在雪地里 — 消失的故事'
-  },
-  {
-    num: '10', title: 'Dream Big', feat: '做大梦',
-    images: ['t10_dream_v1_gpt2.png','t10b_dream_gpt2.png','t10c_dream_gpt2.png','t10d_dream_gpt2.png'],
-    annotation: '攀比心与嫉妒。我虚荣给谁看？以歌曲为载体的心理治疗。',
-    scene: '秋天梧桐大道 — 电瓶车穿过金色落叶'
-  },
-  {
-    num: '11', title: '你跳着舞，我唱着歌', feat: '',
-    images: ['t11_nightcar_v1_gpt2.png','t11b_nightcar_gpt2.png','t11c_nightcar_gpt2.png','t11d_nightcar_gpt2.png'],
-    annotation: '琐碎的随笔。急于求成，害怕麻烦。不能放下笔，得继续创作下去，得有耐心。',
-    scene: '公路片/夜车 — 曾轶可《夜车》的感觉'
-  },
-  {
-    num: '12', title: '看完花火再回', feat: '',
-    images: ['t12_fireworks_v1_gpt2.png','t12b_fireworks_gpt2.png','t12c_fireworks_gpt2.png','t12d_fireworks_gpt2.png'],
-    annotation: '一直在跑，从未停下过。休息的机会是很宝贵的。看完这场烟火再打车。休息好了就继续奔跑吧。',
-    scene: '分屏设计 — 过去与现在，两个自己重合在烟花前'
-  }
+  { num:'01', title:'解开那束结', feat:'', images:['t01_jiekai_v1_gpt2.png','t01b_jiekai_gpt2.png','t01c_jiekai_gpt2.png','t01d_jiekai_gpt2.png'], scene:'', annotation:'' },
+  { num:'02', title:'Flight To Paris (直飞巴黎)', feat:'', images:['t02_paris_v1_gpt2.png','t02b_paris_gpt2.png','t02c_paris_gpt2.png','t02d_paris_gpt2.png'], scene:'', annotation:'' },
+  { num:'03', title:'蜂蜜', feat:'feat. jolae & Jeriyaki', images:['t03_honey_v1_gpt2.png','t03b_honey_gpt2.png','t03c_honey_gpt2.png','t03d_honey_gpt2.png'], scene:'', annotation:'' },
+  { num:'04', title:'象形文字', feat:'', images:['t04_hieroglyph_v1_gpt2.png','t04b_hieroglyph_gpt2.png','t04c_hieroglyph_gpt2.png','t04d_hieroglyph_gpt2.png'], scene:'', annotation:'' },
+  { num:'05', title:'捕风捉影', feat:'feat. 马马魚子', images:['t05_catch_wind_v1_gpt2.png','t05b_catch_wind_gpt2.png','t05c_catch_wind_gpt2.png','t05d_catch_wind_gpt2.png'], scene:'', annotation:'' },
+  { num:'06', title:'得到你的爱', feat:'feat. LimboLimbs & G3GE', images:['t06_love_v1_gpt2.png','t06b_love_gpt2.png','t06c_love_gpt2.png','t06d_love_gpt2.png'], scene:'', annotation:'' },
+  { num:'07', title:'新咒语', feat:'', images:['t07_spell_v1_gpt2.png','t07b_spell_gpt2.png','t07c_spell_gpt2.png','t07d_spell_gpt2.png'], scene:'', annotation:'' },
+  { num:'08', title:'吉卜力音乐', feat:'未完成demo', images:['t08_ghibli_v1_gpt2.png','t08b_ghibli_gpt2.png','t08c_ghibli_gpt2.png','t08d_ghibli_gpt2.png'], scene:'', annotation:'' },
+  { num:'09', title:'销声匿迹', feat:'feat. hpsb & jackzebra', images:['t09_vanish_v1_gpt2.png','t09b_vanish_gpt2.png','t09c_vanish_gpt2.png','t09d_vanish_gpt2.png'], scene:'', annotation:'' },
+  { num:'10', title:'Dream Big (做大梦)', feat:'', images:['t10_dream_v1_gpt2.png','t10b_dream_gpt2.png','t10c_dream_gpt2.png','t10d_dream_gpt2.png'], scene:'', annotation:'' },
+  { num:'11', title:'你跳着舞，我唱着歌', feat:'', images:['t11_nightcar_v1_gpt2.png','t11b_nightcar_gpt2.png','t11c_nightcar_gpt2.png','t11d_nightcar_gpt2.png'], scene:'', annotation:'' },
+  { num:'12', title:'看完花火再回', feat:'', images:['t12_fireworks_v1_gpt2.png','t12b_fireworks_gpt2.png','t12c_fireworks_gpt2.png','t12d_fireworks_gpt2.png'], scene:'', annotation:'' },
 ];
 
-const SUPP = {
-  storyboard: [
-    '06_shot_A_wide_v1_gpt2.png','06_shot_A_wide_v2_gpt2.png','06_shot_A_wide_v3_gpt2.png','06_shot_A_wide_v4_gpt2.png',
-    '07_shot_B_crying_v1_gpt2.png','07_shot_B_crying_v2_gpt2.png','07_shot_B_crying_v3_gpt2.png',
-    '08_shot_C_plane_v1_gpt2.png','08_shot_C_plane_v2_gpt2.png','08_shot_C_plane_v3_gpt2.png','08_shot_C_plane_v4_gpt2.png','08_shot_C_plane_v5_gpt2.png',
-    '09_shot_D_phone_v1_gpt2.png','09_shot_D_phone_v2_gpt2.png','09_shot_D_phone_v3_gpt2.png',
-    '10_shot_E_wipe_v1_gpt2.png','10_shot_E_wipe_v2_gpt2.png','10_shot_E_wipe_v3_gpt2.png',
-    '11_puddle_v1_gpt2.png','12_overpass_v1_gpt2.png','13_streetlight_v1_gpt2.png',
-    '14_hair_v1_gpt2.png','15_hands_v1_gpt2.png','16_intersection_v1_gpt2.png',
-    '17_behind_close_v1_gpt2.png','18_scarf_wind_v1_gpt2.png'
-  ],
-  wild: ['w01_bathtub_gpt2.png','w02_vending_gpt2.png','w03_escalator_gpt2.png','w04_phonebooth_gpt2.png',
-    'w05_laundry_gpt2.png','w06_aquarium_gpt2.png','w07_ferriswheel_gpt2.png','w08_mirror_gpt2.png',
-    'w09_rain_gpt2.png','w10_rooftop_gpt2.png','w11_construction_gpt2.png','w12_hospital_gpt2.png'],
-  daylight: ['d01_rooftop_noon_gpt2.png','d02_bus_afternoon_gpt2.png','d03_market_morning_gpt2.png',
-    'd04_overpass_golden_gpt2.png','d05_pool_hall_gpt2.png','d06_rain_city_gpt2.png',
-    'd07_classroom_gpt2.png','d08_bridge_sunset_gpt2.png','d09_laundry_morning_gpt2.png',
-    'd10_park_bench_gpt2.png','d11_bicycle_dawn_gpt2.png','d12_swimming_pool_gpt2.png'],
-  urban: ['u01_metro_platform_gpt2.png','u02_metro_window_gpt2.png','u03_metro_exit_gpt2.png',
-    'u04_cafe_window_gpt2.png','u05_cafe_counter_gpt2.png','u06_cafe_rain_gpt2.png',
-    'u07_tram_gpt2.png','u08_tram_night_gpt2.png','u09_bookstore_gpt2.png',
-    'u10_rooftop_city_gpt2.png','u11_station_farewell_gpt2.png','u12_convenience_dawn_gpt2.png']
+const AUDIO_MAP = {
+  '01':'解开那束结.mp3','02':'Flight To Paris (直飞巴黎).mp3','03':'蜂蜜 (feat. jolae & Jeriyaki).mp3',
+  '04':'象形文字.mp3','05':'捕风捉影 (feat. 马马魚子).mp3','06':'得到你的爱 (feat. LimboLimbs & G3GE).mp3',
+  '07':'新咒语.mp3','08':'吉卜力音乐.mp3','09':'销声匿迹 (feat. hpsb & jackzebra).mp3',
+  '10':'Dream Big (做大梦).mp3','11':'你跳着舞 我唱着歌.mp3','12':'看完花火再回.mp3'
 };
+
+const SUPP = {
+  storyboard: ['06_shot_A_wide_v1_gpt2.png','06_shot_A_wide_v2_gpt2.png','06_shot_A_wide_v3_gpt2.png','06_shot_A_wide_v4_gpt2.png','07_shot_B_crying_v1_gpt2.png','07_shot_B_crying_v2_gpt2.png','07_shot_B_crying_v3_gpt2.png','08_shot_C_plane_v1_gpt2.png','08_shot_C_plane_v2_gpt2.png','08_shot_C_plane_v3_gpt2.png','08_shot_C_plane_v4_gpt2.png','08_shot_C_plane_v5_gpt2.png','09_shot_D_phone_v1_gpt2.png','09_shot_D_phone_v2_gpt2.png','09_shot_D_phone_v3_gpt2.png','10_shot_E_wipe_v1_gpt2.png','10_shot_E_wipe_v2_gpt2.png','10_shot_E_wipe_v3_gpt2.png','11_puddle_v1_gpt2.png','12_overpass_v1_gpt2.png','13_streetlight_v1_gpt2.png','14_hair_v1_gpt2.png','15_hands_v1_gpt2.png','16_intersection_v1_gpt2.png','17_behind_close_v1_gpt2.png','18_scarf_wind_v1_gpt2.png'],
+  wild: ['w01_bathtub_gpt2.png','w02_vending_gpt2.png','w03_escalator_gpt2.png','w04_phonebooth_gpt2.png','w05_laundry_gpt2.png','w06_aquarium_gpt2.png','w07_ferriswheel_gpt2.png','w08_mirror_gpt2.png','w09_rain_gpt2.png','w10_rooftop_gpt2.png','w11_construction_gpt2.png','w12_hospital_gpt2.png'],
+  daylight: ['d01_rooftop_noon_gpt2.png','d02_bus_afternoon_gpt2.png','d03_market_morning_gpt2.png','d04_overpass_golden_gpt2.png','d05_pool_hall_gpt2.png','d06_rain_city_gpt2.png','d07_classroom_gpt2.png','d08_bridge_sunset_gpt2.png','d09_laundry_morning_gpt2.png','d10_park_bench_gpt2.png','d11_bicycle_dawn_gpt2.png','d12_swimming_pool_gpt2.png'],
+  urban: ['u01_metro_platform_gpt2.png','u02_metro_window_gpt2.png','u03_metro_exit_gpt2.png','u04_cafe_window_gpt2.png','u05_cafe_counter_gpt2.png','u06_cafe_rain_gpt2.png','u07_tram_gpt2.png','u08_tram_night_gpt2.png','u09_bookstore_gpt2.png','u10_rooftop_city_gpt2.png','u11_station_farewell_gpt2.png','u12_convenience_dawn_gpt2.png']
+};
+
+// --- STATE ---
+let siteData = {};
+let connected = false;
+let saveTimer = null;
+
+// --- API ---
+async function loadData() {
+  try {
+    const res = await fetch('/api/data');
+    if (res.ok) {
+      siteData = await res.json();
+      connected = true;
+    }
+  } catch(e) {
+    // fallback to localStorage
+    siteData = JSON.parse(localStorage.getItem('site_data') || '{}');
+  }
+  updateStatus();
+  applyData();
+}
+
+async function saveData(partial) {
+  Object.assign(siteData, partial);
+  localStorage.setItem('site_data', JSON.stringify(siteData));
+
+  if (connected) {
+    try {
+      await fetch('/api/data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(partial)
+      });
+      showSaved();
+    } catch(e) { console.warn('save failed', e); }
+  } else {
+    showSaved();
+  }
+}
+
+function updateStatus() {
+  document.getElementById('dot').className = 'status-dot ' + (connected ? 'on' : 'off');
+  document.getElementById('status-text').textContent = connected ? '已连接 · 共享模式' : '离线 · 本地模式';
+}
+
+function showSaved() {
+  document.getElementById('last-save').textContent = '已保存 ' + new Date().toLocaleTimeString();
+}
+
+function debounce(fn, ms) {
+  let t;
+  return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
+}
+
+const debouncedSave = debounce((key, val) => {
+  saveData({ [key]: val });
+}, 800);
 
 // --- RENDER ---
 const tracklist = document.getElementById('tracklist');
-let currentAudio = null;
-let currentBtn = null;
+let currentAudio = null, currentBtn = null;
 
-TRACKS.forEach((t, i) => {
+TRACKS.forEach(t => {
   const div = document.createElement('div');
   div.className = 'track';
   div.id = `track-${t.num}`;
@@ -443,14 +321,14 @@ TRACKS.forEach((t, i) => {
       <span class="track-title">${t.title}</span>
       ${t.feat ? `<span class="track-feat">${t.feat}</span>` : ''}
     </div>
-    <div class="player" data-track="${t.num}">
-      <button class="play-btn" data-src="audio/${t.num}_${encodeURIComponent(getAudioFilename(t))}">
+    <div class="player">
+      <button class="play-btn" data-src="audio/${t.num}_${encodeURIComponent(AUDIO_MAP[t.num])}">
         <svg viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19"/></svg>
       </button>
       <div class="progress-wrap"><div class="progress-bar"></div></div>
       <span class="time-display">0:00 / --:--</span>
     </div>
-    <div style="font-size:0.8rem;color:var(--dim);margin-bottom:1.5rem;letter-spacing:0.05em;">${t.scene}</div>
+    <div class="scene-line" contenteditable="true" data-field="scene_${t.num}" placeholder="点击写场景描述..."></div>
     <div class="concepts">
       ${t.images.map(img => `
         <div class="concept-img" data-full="images/${img}">
@@ -459,28 +337,23 @@ TRACKS.forEach((t, i) => {
         </div>
       `).join('')}
     </div>
-    <div class="annotation">${t.annotation}</div>
+    <div class="upload-area" data-track="${t.num}">
+      <div class="uploads-grid" id="uploads-${t.num}"></div>
+      <button class="upload-btn" onclick="triggerUpload('${t.num}')">+ 上传参考图</button>
+      <input type="file" id="file-${t.num}" accept="image/*" multiple style="display:none" onchange="handleUpload('${t.num}', this.files)">
+    </div>
+    <div class="annotation" contenteditable="true" data-field="note_${t.num}" placeholder="点击写备注..."></div>
+    <div class="notes-section">
+      <div class="notes-title">讨论</div>
+      <div class="note-input-row">
+        <input class="note-input" id="input-${t.num}" placeholder="写点什么..." onkeydown="if(event.key==='Enter'){addNote('${t.num}');event.preventDefault();}">
+        <button class="note-send" onclick="addNote('${t.num}')">发送</button>
+      </div>
+      <ul class="note-list" id="notes-${t.num}"></ul>
+    </div>
   `;
   tracklist.appendChild(div);
 });
-
-function getAudioFilename(t) {
-  const map = {
-    '01': '解开那束结.mp3',
-    '02': 'Flight To Paris (直飞巴黎).mp3',
-    '03': '蜂蜜 (feat. jolae & Jeriyaki).mp3',
-    '04': '象形文字.mp3',
-    '05': '捕风捉影 (feat. 马马魚子).mp3',
-    '06': '得到你的爱 (feat. LimboLimbs & G3GE).mp3',
-    '07': '新咒语.mp3',
-    '08': '吉卜力音乐.mp3',
-    '09': '销声匿迹 (feat. hpsb & jackzebra).mp3',
-    '10': 'Dream Big (做大梦).mp3',
-    '11': '你跳着舞 我唱着歌.mp3',
-    '12': '看完花火再回.mp3'
-  };
-  return map[t.num] || '';
-}
 
 // Supplementary grids
 Object.entries(SUPP).forEach(([key, imgs]) => {
@@ -495,85 +368,216 @@ Object.entries(SUPP).forEach(([key, imgs]) => {
   });
 });
 
+// --- EDITABLE TEXT ---
+document.querySelectorAll('[contenteditable]').forEach(el => {
+  const field = el.dataset.field;
+  if (!field) return;
+
+  // placeholder behavior
+  el.addEventListener('focus', () => {
+    if (el.textContent.trim() === '' || el.textContent === el.getAttribute('placeholder')) {
+      el.textContent = '';
+      el.style.color = '';
+    }
+  });
+
+  el.addEventListener('blur', () => {
+    if (el.textContent.trim() === '') {
+      el.textContent = el.getAttribute('placeholder') || '';
+      el.style.color = '#333';
+    }
+  });
+
+  el.addEventListener('input', () => {
+    debouncedSave(field, el.textContent.trim());
+  });
+});
+
+function applyData() {
+  document.querySelectorAll('[contenteditable]').forEach(el => {
+    const field = el.dataset.field;
+    if (!field) return;
+    const val = siteData[field];
+    if (val) {
+      el.textContent = val;
+      el.style.color = '';
+    } else {
+      el.textContent = el.getAttribute('placeholder') || '';
+      el.style.color = '#333';
+    }
+  });
+
+  // render uploads and notes
+  TRACKS.forEach(t => {
+    renderUploads(t.num);
+    renderNotes(t.num);
+  });
+}
+
+// --- IMAGE UPLOAD ---
+function triggerUpload(num) {
+  document.getElementById(`file-${num}`).click();
+}
+
+async function handleUpload(num, files) {
+  for (const file of files) {
+    const base64 = await resizeAndEncode(file, 600);
+    const key = `uploads_${num}`;
+    const uploads = siteData[key] || [];
+    uploads.push({ data: base64, name: file.name, time: Date.now() });
+    await saveData({ [key]: uploads });
+    renderUploads(num);
+  }
+}
+
+function resizeAndEncode(file, maxSize) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let w = img.width, h = img.height;
+      if (w > maxSize || h > maxSize) {
+        if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
+        else { w = Math.round(w * maxSize / h); h = maxSize; }
+      }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/webp', 0.7));
+    };
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+function renderUploads(num) {
+  const container = document.getElementById(`uploads-${num}`);
+  const uploads = siteData[`uploads_${num}`] || [];
+  container.innerHTML = uploads.map((u, i) => `
+    <div class="upload-card">
+      <img src="${u.data}" alt="${u.name}" onclick="openLightbox('${u.data}')">
+      <div class="caption">${u.name}</div>
+      <button class="delete-btn" onclick="deleteUpload('${num}',${i})">×</button>
+    </div>
+  `).join('');
+}
+
+function deleteUpload(num, idx) {
+  const key = `uploads_${num}`;
+  const uploads = siteData[key] || [];
+  uploads.splice(idx, 1);
+  saveData({ [key]: uploads });
+  renderUploads(num);
+}
+
+// --- NOTES ---
+function addNote(num) {
+  const input = document.getElementById(`input-${num}`);
+  const text = input.value.trim();
+  if (!text) return;
+
+  const key = `notes_${num}`;
+  const notes = siteData[key] || [];
+  notes.push({ text, time: Date.now() });
+  saveData({ [key]: notes });
+  renderNotes(num);
+  input.value = '';
+}
+
+function renderNotes(num) {
+  const list = document.getElementById(`notes-${num}`);
+  const notes = siteData[`notes_${num}`] || [];
+  list.innerHTML = notes.map((n, i) => `
+    <li class="note-item">
+      <span class="note-text">${escHtml(n.text)}</span>
+      <span class="note-meta">${new Date(n.time).toLocaleString()}<button class="note-del" onclick="deleteNote('${num}',${i})">删除</button></span>
+    </li>
+  `).join('');
+}
+
+function deleteNote(num, idx) {
+  const key = `notes_${num}`;
+  const notes = siteData[key] || [];
+  notes.splice(idx, 1);
+  saveData({ [key]: notes });
+  renderNotes(num);
+}
+
+function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
 // --- AUDIO PLAYER ---
 document.querySelectorAll('.play-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     const src = decodeURIComponent(btn.dataset.src);
     const player = btn.closest('.player');
-    const progressBar = player.querySelector('.progress-bar');
-    const timeDisplay = player.querySelector('.time-display');
+    const bar = player.querySelector('.progress-bar');
+    const time = player.querySelector('.time-display');
 
     if (currentAudio && currentBtn === btn) {
-      if (currentAudio.paused) {
-        currentAudio.play();
-        btn.innerHTML = '<svg viewBox="0 0 24 24"><rect x="7" y="5" width="3" height="14"/><rect x="14" y="5" width="3" height="14"/></svg>';
-      } else {
-        currentAudio.pause();
-        btn.innerHTML = '<svg viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19"/></svg>';
-      }
+      if (currentAudio.paused) { currentAudio.play(); btn.innerHTML = pauseIcon(); }
+      else { currentAudio.pause(); btn.innerHTML = playIcon(); }
       return;
     }
 
-    if (currentAudio) {
-      currentAudio.pause();
-      if (currentBtn) currentBtn.innerHTML = '<svg viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19"/></svg>';
-    }
-
+    if (currentAudio) { currentAudio.pause(); if (currentBtn) currentBtn.innerHTML = playIcon(); }
     currentAudio = new Audio(src);
     currentBtn = btn;
     currentAudio.play();
-    btn.innerHTML = '<svg viewBox="0 0 24 24"><rect x="7" y="5" width="3" height="14"/><rect x="14" y="5" width="3" height="14"/></svg>';
+    btn.innerHTML = pauseIcon();
 
     currentAudio.addEventListener('timeupdate', () => {
-      const pct = (currentAudio.currentTime / currentAudio.duration) * 100;
-      progressBar.style.width = pct + '%';
-      timeDisplay.textContent = `${fmt(currentAudio.currentTime)} / ${fmt(currentAudio.duration)}`;
+      bar.style.width = (currentAudio.currentTime / currentAudio.duration * 100) + '%';
+      time.textContent = `${fmt(currentAudio.currentTime)} / ${fmt(currentAudio.duration)}`;
     });
+    currentAudio.addEventListener('ended', () => { btn.innerHTML = playIcon(); bar.style.width = '0%'; });
 
-    currentAudio.addEventListener('ended', () => {
-      btn.innerHTML = '<svg viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19"/></svg>';
-      progressBar.style.width = '0%';
-    });
-
-    player.querySelector('.progress-wrap').addEventListener('click', e => {
+    player.querySelector('.progress-wrap').onclick = e => {
       if (!currentAudio || currentBtn !== btn) return;
-      const rect = e.currentTarget.getBoundingClientRect();
-      const pct = (e.clientX - rect.left) / rect.width;
-      currentAudio.currentTime = pct * currentAudio.duration;
-    });
+      const r = e.currentTarget.getBoundingClientRect();
+      currentAudio.currentTime = ((e.clientX - r.left) / r.width) * currentAudio.duration;
+    };
   });
 });
 
-function fmt(s) {
-  if (!s || isNaN(s)) return '--:--';
-  const m = Math.floor(s / 60);
-  const sec = Math.floor(s % 60);
-  return `${m}:${sec.toString().padStart(2, '0')}`;
-}
+function playIcon() { return '<svg viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19"/></svg>'; }
+function pauseIcon() { return '<svg viewBox="0 0 24 24"><rect x="7" y="5" width="3" height="14"/><rect x="14" y="5" width="3" height="14"/></svg>'; }
+function fmt(s) { if (!s || isNaN(s)) return '--:--'; return Math.floor(s/60) + ':' + String(Math.floor(s%60)).padStart(2,'0'); }
 
 // --- LIGHTBOX ---
-const lightbox = document.getElementById('lightbox');
-const lightboxImg = document.getElementById('lightbox-img');
+function openLightbox(src) {
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').classList.add('active');
+}
 
 document.addEventListener('click', e => {
   const card = e.target.closest('.concept-img');
-  if (card) {
-    lightboxImg.src = card.dataset.full;
-    lightbox.classList.add('active');
-  }
+  if (card && !e.target.closest('.upload-card')) openLightbox(card.dataset.full);
 });
 
-lightbox.addEventListener('click', () => {
-  lightbox.classList.remove('active');
-  lightboxImg.src = '';
+document.getElementById('lightbox').addEventListener('click', () => {
+  document.getElementById('lightbox').classList.remove('active');
+  document.getElementById('lightbox-img').src = '';
 });
 
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    lightbox.classList.remove('active');
-    lightboxImg.src = '';
-  }
+  if (e.key === 'Escape') { document.getElementById('lightbox').classList.remove('active'); }
 });
+
+// --- POLL FOR CHANGES (every 30s) ---
+setInterval(async () => {
+  if (!connected) return;
+  try {
+    const res = await fetch('/api/data');
+    if (res.ok) {
+      const fresh = await res.json();
+      if (JSON.stringify(fresh) !== JSON.stringify(siteData)) {
+        siteData = fresh;
+        applyData();
+      }
+    }
+  } catch(e) {}
+}, 30000);
+
+// --- INIT ---
+loadData();
 </script>
 </body>
 </html>
