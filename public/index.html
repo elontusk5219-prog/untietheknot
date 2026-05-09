@@ -125,11 +125,20 @@ body {
 
 /* Concept art grid */
 .concepts { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
-.concept-img { aspect-ratio: 1; overflow: hidden; border-radius: 6px; cursor: pointer; position: relative; border: 1px solid var(--border); }
-.concept-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; }
+.concept-img { aspect-ratio: 1; overflow: hidden; border-radius: 6px; cursor: grab; position: relative; border: 1px solid var(--border); transition: opacity 0.2s, border-color 0.2s; }
+.concept-img.dragging { opacity: 0.4; cursor: grabbing; }
+.concept-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; pointer-events: none; }
 .concept-img:hover img { transform: scale(1.05); }
-.concept-img .label { position: absolute; bottom: 0; left: 0; right: 0; padding: 0.5rem 0.8rem; background: linear-gradient(transparent, rgba(0,0,0,0.8)); font-size: 0.65rem; color: var(--dim); opacity: 0; transition: opacity 0.3s; }
+.concept-img .label { position: absolute; bottom: 0; left: 0; right: 0; padding: 0.5rem 0.8rem; background: linear-gradient(transparent, rgba(0,0,0,0.8)); font-size: 0.65rem; color: var(--dim); opacity: 0; transition: opacity 0.3s; pointer-events: none; }
 .concept-img:hover .label { opacity: 1; }
+
+/* Drop zone highlight */
+.concepts.drag-over { outline: 2px dashed var(--accent); outline-offset: 4px; border-radius: 8px; background: rgba(196,149,106,0.05); }
+.supp-grid.drag-over { outline: 2px dashed var(--accent); outline-offset: 4px; border-radius: 8px; background: rgba(196,149,106,0.05); }
+.drop-hint { display: none; padding: 2rem; text-align: center; color: var(--accent); font-size: 0.8rem; letter-spacing: 0.05em; border: 1px dashed var(--border); border-radius: 6px; grid-column: 1 / -1; }
+.drag-over .drop-hint { display: block; }
+.concept-img .remove-btn { position: absolute; top: 4px; left: 4px; width: 20px; height: 20px; border-radius: 50%; border: none; background: rgba(0,0,0,0.7); color: #e44; font-size: 12px; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 2; }
+.concept-img:hover .remove-btn { display: flex; }
 
 /* Upload area */
 .upload-area { margin-top: 1.5rem; }
@@ -329,13 +338,15 @@ TRACKS.forEach(t => {
       <span class="time-display">0:00 / --:--</span>
     </div>
     <div class="scene-line" contenteditable="true" data-field="scene_${t.num}" placeholder="点击写场景描述..."></div>
-    <div class="concepts">
+    <div class="concepts" data-drop-target="track-${t.num}">
       ${t.images.map(img => `
-        <div class="concept-img" data-full="images/${img}">
+        <div class="concept-img" draggable="true" data-full="images/${img}" data-thumb="images/${img.replace('.png','.webp')}" data-origin="track-${t.num}">
           <img src="images/${img.replace('.png','.webp')}" alt="${t.title}" loading="lazy">
           <div class="label">${img.replace('_gpt2.png','').replace(/_/g,' ')}</div>
+          <button class="remove-btn" onclick="event.stopPropagation();removeImage(this.closest('.concept-img'))">×</button>
         </div>
       `).join('')}
+      <div class="drop-hint">拖放图片到这里</div>
     </div>
     <div class="upload-area" data-track="${t.num}">
       <div class="uploads-grid" id="uploads-${t.num}"></div>
@@ -359,13 +370,21 @@ TRACKS.forEach(t => {
 Object.entries(SUPP).forEach(([key, imgs]) => {
   const grid = document.getElementById(`grid-${key}`);
   if (!grid) return;
+  grid.dataset.dropTarget = `supp-${key}`;
   imgs.forEach(img => {
     const d = document.createElement('div');
     d.className = 'concept-img';
+    d.draggable = true;
     d.dataset.full = `images/${img}`;
-    d.innerHTML = `<img src="images/${img.replace('.png','.webp')}" alt="${img}" loading="lazy"><div class="label">${img.replace('_gpt2.png','').replace(/_/g,' ')}</div>`;
+    d.dataset.thumb = `images/${img.replace('.png','.webp')}`;
+    d.dataset.origin = `supp-${key}`;
+    d.innerHTML = `<img src="images/${img.replace('.png','.webp')}" alt="${img}" loading="lazy"><div class="label">${img.replace('_gpt2.png','').replace(/_/g,' ')}</div><button class="remove-btn" onclick="event.stopPropagation();removeImage(this.closest('.concept-img'))">×</button>`;
     grid.appendChild(d);
   });
+  const hint = document.createElement('div');
+  hint.className = 'drop-hint';
+  hint.textContent = '拖放图片到这里';
+  grid.appendChild(hint);
 });
 
 // --- EDITABLE TEXT ---
@@ -407,11 +426,12 @@ function applyData() {
     }
   });
 
-  // render uploads and notes
+  // render uploads, notes, and image arrangements
   TRACKS.forEach(t => {
     renderUploads(t.num);
     renderNotes(t.num);
   });
+  applyArrangements();
 }
 
 // --- IMAGE UPLOAD ---
@@ -547,9 +567,12 @@ function openLightbox(src) {
   document.getElementById('lightbox').classList.add('active');
 }
 
+let dragHappened = false;
+document.addEventListener('dragstart', () => { dragHappened = true; }, true);
 document.addEventListener('click', e => {
+  if (dragHappened) { dragHappened = false; return; }
   const card = e.target.closest('.concept-img');
-  if (card && !e.target.closest('.upload-card')) openLightbox(card.dataset.full);
+  if (card && !e.target.closest('.upload-card') && !e.target.closest('.remove-btn')) openLightbox(card.dataset.full);
 });
 
 document.getElementById('lightbox').addEventListener('click', () => {
@@ -560,6 +583,115 @@ document.getElementById('lightbox').addEventListener('click', () => {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') { document.getElementById('lightbox').classList.remove('active'); }
 });
+
+// --- DRAG & DROP ---
+let dragData = null;
+
+document.addEventListener('dragstart', e => {
+  const card = e.target.closest('.concept-img');
+  if (!card) return;
+  card.classList.add('dragging');
+  dragData = {
+    full: card.dataset.full,
+    thumb: card.dataset.thumb,
+    label: card.querySelector('.label')?.textContent || '',
+    origin: card.dataset.origin,
+    el: card
+  };
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', '');
+});
+
+document.addEventListener('dragend', e => {
+  const card = e.target.closest('.concept-img');
+  if (card) card.classList.remove('dragging');
+  document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+  dragData = null;
+});
+
+document.addEventListener('dragover', e => {
+  const grid = e.target.closest('[data-drop-target]');
+  if (!grid || !dragData) return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+  grid.classList.add('drag-over');
+});
+
+document.addEventListener('dragleave', e => {
+  const grid = e.target.closest('[data-drop-target]');
+  if (!grid) return;
+  const related = e.relatedTarget?.closest('[data-drop-target]');
+  if (related !== grid) grid.classList.remove('drag-over');
+});
+
+document.addEventListener('drop', e => {
+  e.preventDefault();
+  const grid = e.target.closest('[data-drop-target]');
+  if (!grid || !dragData) return;
+  grid.classList.remove('drag-over');
+
+  const targetZone = grid.dataset.dropTarget;
+  if (targetZone === dragData.origin) return;
+
+  // Create new image card in target
+  const card = document.createElement('div');
+  card.className = 'concept-img';
+  card.draggable = true;
+  card.dataset.full = dragData.full;
+  card.dataset.thumb = dragData.thumb;
+  card.dataset.origin = targetZone;
+  card.innerHTML = `<img src="${dragData.thumb}" alt="" loading="lazy"><div class="label">${dragData.label}</div><button class="remove-btn" onclick="event.stopPropagation();removeImage(this.closest('.concept-img'))">×</button>`;
+  const hint = grid.querySelector('.drop-hint');
+  grid.insertBefore(card, hint);
+
+  // Remove from source
+  dragData.el.remove();
+
+  // Save arrangement
+  saveArrangement(dragData.origin);
+  saveArrangement(targetZone);
+});
+
+function removeImage(card) {
+  const zone = card.closest('[data-drop-target]')?.dataset.dropTarget;
+  card.remove();
+  if (zone) saveArrangement(zone);
+}
+
+function saveArrangement(zoneId) {
+  const grid = document.querySelector(`[data-drop-target="${zoneId}"]`);
+  if (!grid) return;
+  const images = [...grid.querySelectorAll('.concept-img')].map(c => ({
+    full: c.dataset.full,
+    thumb: c.dataset.thumb,
+    label: c.querySelector('.label')?.textContent || ''
+  }));
+  debouncedSave(`arrangement_${zoneId}`, images);
+}
+
+function applyArrangements() {
+  document.querySelectorAll('[data-drop-target]').forEach(grid => {
+    const zoneId = grid.dataset.dropTarget;
+    const arr = siteData[`arrangement_${zoneId}`];
+    if (!arr || !Array.isArray(arr)) return;
+
+    // Remove existing concept-imgs, keep the drop hint
+    grid.querySelectorAll('.concept-img').forEach(c => c.remove());
+    const hint = grid.querySelector('.drop-hint');
+
+    arr.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'concept-img';
+      card.draggable = true;
+      card.dataset.full = item.full;
+      card.dataset.thumb = item.thumb;
+      card.dataset.origin = zoneId;
+      card.innerHTML = `<img src="${item.thumb}" alt="" loading="lazy"><div class="label">${item.label}</div><button class="remove-btn" onclick="event.stopPropagation();removeImage(this.closest('.concept-img'))">×</button>`;
+      grid.insertBefore(card, hint);
+    });
+  });
+}
 
 // --- POLL FOR CHANGES (every 30s) ---
 setInterval(async () => {
