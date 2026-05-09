@@ -454,7 +454,7 @@ TRACKS.forEach((t, i) => {
     <div class="concepts">
       ${t.images.map(img => `
         <div class="concept-img" data-full="images/${img}">
-          <img src="images/${img}" alt="${t.title}" loading="lazy">
+          <img src="images/${img.replace('.png','.webp')}" alt="${t.title}" loading="lazy">
           <div class="label">${img.replace('_gpt2.png','').replace(/_/g,' ')}</div>
         </div>
       `).join('')}
@@ -490,7 +490,7 @@ Object.entries(SUPP).forEach(([key, imgs]) => {
     const d = document.createElement('div');
     d.className = 'concept-img';
     d.dataset.full = `images/${img}`;
-    d.innerHTML = `<img src="images/${img}" alt="${img}" loading="lazy"><div class="label">${img.replace('_gpt2.png','').replace(/_/g,' ')}</div>`;
+    d.innerHTML = `<img src="images/${img.replace('.png','.webp')}" alt="${img}" loading="lazy"><div class="label">${img.replace('_gpt2.png','').replace(/_/g,' ')}</div>`;
     grid.appendChild(d);
   });
 });
