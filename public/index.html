@@ -184,6 +184,81 @@ body {
 .supplementary h2 { font-size: 1.3rem; color: var(--dim); margin-bottom: 2rem; letter-spacing: 0.1em; }
 .supp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.8rem; }
 
+/* Shelf - floating clipboard */
+.shelf {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 800;
+  width: 52px;
+  transition: width 0.3s ease, background 0.3s;
+  background: rgba(20,20,22,0.85);
+  backdrop-filter: blur(10px);
+  border-right: 1px solid var(--border);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  border-radius: 0 10px 10px 0;
+  padding: 8px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  max-height: 70vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.shelf::-webkit-scrollbar { width: 3px; }
+.shelf::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+.shelf-label {
+  writing-mode: vertical-rl;
+  font-size: 0.6rem;
+  color: var(--dim);
+  letter-spacing: 0.15em;
+  white-space: nowrap;
+  user-select: none;
+  padding: 4px 0;
+}
+
+.shelf.has-items { width: 90px; }
+.shelf.drag-over { border-color: var(--accent); background: rgba(196,149,106,0.1); }
+
+.shelf-item {
+  width: 72px;
+  height: 72px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  cursor: grab;
+  position: relative;
+  flex-shrink: 0;
+  transition: border-color 0.2s;
+}
+.shelf-item:hover { border-color: var(--accent); }
+.shelf-item img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+.shelf-item .shelf-rm {
+  position: absolute; top: 2px; right: 2px;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: rgba(0,0,0,0.8); color: #e44;
+  font-size: 10px; border: none; cursor: pointer;
+  display: none; align-items: center; justify-content: center;
+}
+.shelf-item:hover .shelf-rm { display: flex; }
+
+.shelf-empty {
+  width: 40px; height: 40px;
+  border: 1px dashed var(--dim);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--dim);
+  font-size: 16px;
+  opacity: 0.5;
+}
+
+.shelf.has-items .shelf-empty { display: none; }
+
 /* Lightbox */
 .lightbox { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.95); justify-content: center; align-items: center; cursor: zoom-out; }
 .lightbox.active { display: flex; }
@@ -199,6 +274,10 @@ body {
   .uploads-grid { grid-template-columns: repeat(2, 1fr); }
   .hero h1 { height: 45vh; }
   .status-bar { font-size: 0.6rem; }
+  .shelf { width: 44px; max-height: 50vh; }
+  .shelf.has-items { width: 70px; }
+  .shelf-item { width: 56px; height: 56px; }
+  .shelf-label { font-size: 0.5rem; }
 }
 </style>
 </head>
@@ -226,6 +305,11 @@ body {
 </section>
 
 <footer class="footer">解开那束结 RUBEN25/26 · 概念视觉书</footer>
+
+<div class="shelf" id="shelf">
+  <div class="shelf-label">暂存架</div>
+  <div class="shelf-empty">+</div>
+</div>
 
 <div class="lightbox" id="lightbox"><img id="lightbox-img" src="" alt=""></div>
 
@@ -586,16 +670,19 @@ document.addEventListener('keydown', e => {
 
 // --- DRAG & DROP ---
 let dragData = null;
+const shelf = document.getElementById('shelf');
 
 document.addEventListener('dragstart', e => {
-  const card = e.target.closest('.concept-img');
+  const card = e.target.closest('.concept-img') || e.target.closest('.shelf-item');
   if (!card) return;
   card.classList.add('dragging');
+
+  const isShelfItem = card.classList.contains('shelf-item');
   dragData = {
     full: card.dataset.full,
     thumb: card.dataset.thumb,
-    label: card.querySelector('.label')?.textContent || '',
-    origin: card.dataset.origin,
+    label: card.dataset.label || card.querySelector('.label')?.textContent || '',
+    origin: isShelfItem ? 'shelf' : card.dataset.origin,
     el: card
   };
   e.dataTransfer.effectAllowed = 'move';
@@ -603,22 +690,41 @@ document.addEventListener('dragstart', e => {
 });
 
 document.addEventListener('dragend', e => {
-  const card = e.target.closest('.concept-img');
+  const card = e.target.closest('.concept-img') || e.target.closest('.shelf-item');
   if (card) card.classList.remove('dragging');
   document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+  shelf.classList.remove('drag-over');
   dragData = null;
 });
 
 document.addEventListener('dragover', e => {
+  if (!dragData) return;
+
+  // Check shelf
+  if (e.target.closest('#shelf')) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+    shelf.classList.add('drag-over');
+    return;
+  }
+
+  // Check grid zones
   const grid = e.target.closest('[data-drop-target]');
-  if (!grid || !dragData) return;
+  if (!grid) return;
   e.preventDefault();
   e.dataTransfer.dropEffect = 'move';
   document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+  shelf.classList.remove('drag-over');
   grid.classList.add('drag-over');
 });
 
 document.addEventListener('dragleave', e => {
+  // Shelf leave
+  if (e.target.closest('#shelf') && !e.relatedTarget?.closest('#shelf')) {
+    shelf.classList.remove('drag-over');
+  }
+  // Grid leave
   const grid = e.target.closest('[data-drop-target]');
   if (!grid) return;
   const related = e.relatedTarget?.closest('[data-drop-target]');
@@ -627,8 +733,26 @@ document.addEventListener('dragleave', e => {
 
 document.addEventListener('drop', e => {
   e.preventDefault();
+  if (!dragData) return;
+
+  // Drop onto shelf
+  if (e.target.closest('#shelf')) {
+    shelf.classList.remove('drag-over');
+    if (dragData.origin === 'shelf') return; // already on shelf
+
+    addToShelf(dragData.full, dragData.thumb, dragData.label);
+    dragData.el.remove();
+
+    // Save source arrangement
+    if (dragData.origin !== 'shelf') {
+      saveArrangement(dragData.origin);
+    }
+    return;
+  }
+
+  // Drop onto grid zone
   const grid = e.target.closest('[data-drop-target]');
-  if (!grid || !dragData) return;
+  if (!grid) return;
   grid.classList.remove('drag-over');
 
   const targetZone = grid.dataset.dropTarget;
@@ -648,10 +772,34 @@ document.addEventListener('drop', e => {
   // Remove from source
   dragData.el.remove();
 
-  // Save arrangement
-  saveArrangement(dragData.origin);
+  // Save arrangements
+  if (dragData.origin !== 'shelf') {
+    saveArrangement(dragData.origin);
+  }
   saveArrangement(targetZone);
+  updateShelfState();
 });
+
+// --- SHELF ---
+function addToShelf(full, thumb, label) {
+  const item = document.createElement('div');
+  item.className = 'shelf-item';
+  item.draggable = true;
+  item.dataset.full = full;
+  item.dataset.thumb = thumb;
+  item.dataset.label = label;
+  item.innerHTML = `<img src="${thumb}" alt="${label}"><button class="shelf-rm" onclick="event.stopPropagation();this.parentElement.remove();updateShelfState();">×</button>`;
+  item.addEventListener('click', e => {
+    if (!e.target.closest('.shelf-rm')) openLightbox(full);
+  });
+  shelf.insertBefore(item, shelf.querySelector('.shelf-empty'));
+  updateShelfState();
+}
+
+function updateShelfState() {
+  const hasItems = shelf.querySelectorAll('.shelf-item').length > 0;
+  shelf.classList.toggle('has-items', hasItems);
+}
 
 function removeImage(card) {
   const zone = card.closest('[data-drop-target]')?.dataset.dropTarget;
