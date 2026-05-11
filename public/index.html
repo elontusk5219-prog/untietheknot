@@ -348,18 +348,18 @@ body {
 
 <script>
 const TRACKS = [
-  { num:'01', title:'解开那束结', feat:'', images:['t01_jiekai_v1_gpt2.png','t01b_jiekai_gpt2.png','t01c_jiekai_gpt2.png','t01d_jiekai_gpt2.png'], scene:'', annotation:'' },
-  { num:'02', title:'Flight To Paris (直飞巴黎)', feat:'', images:['t02_paris_v1_gpt2.png','t02b_paris_gpt2.png','t02c_paris_gpt2.png','t02d_paris_gpt2.png'], scene:'', annotation:'' },
-  { num:'03', title:'蜂蜜', feat:'feat. jolae & Jeriyaki', images:['t03_honey_v1_gpt2.png','t03b_honey_gpt2.png','t03c_honey_gpt2.png','t03d_honey_gpt2.png'], scene:'', annotation:'' },
-  { num:'04', title:'象形文字', feat:'', images:['t04_hieroglyph_v1_gpt2.png','t04b_hieroglyph_gpt2.png','t04c_hieroglyph_gpt2.png','t04d_hieroglyph_gpt2.png'], scene:'', annotation:'' },
-  { num:'05', title:'捕风捉影', feat:'feat. 马马魚子', images:['t05_catch_wind_v1_gpt2.png','t05b_catch_wind_gpt2.png','t05c_catch_wind_gpt2.png','t05d_catch_wind_gpt2.png'], scene:'', annotation:'' },
-  { num:'06', title:'得到你的爱', feat:'feat. LimboLimbs & G3GE', images:['t06_love_v1_gpt2.png','t06b_love_gpt2.png','t06c_love_gpt2.png','t06d_love_gpt2.png'], scene:'', annotation:'' },
-  { num:'07', title:'新咒语', feat:'', images:['t07_spell_v1_gpt2.png','t07b_spell_gpt2.png','t07c_spell_gpt2.png','t07d_spell_gpt2.png'], scene:'', annotation:'' },
+  { num:'01', title:'解开那束结', feat:'', images:['t01_jiekai_v1_gpt2.png','t01b_jiekai_gpt2.png','t01c_jiekai_gpt2.png','t01d_jiekai_gpt2.png','v_01_jiekai_01.png','v_01_jiekai_02.png','v_01_jiekai_03.png','v_01_jiekai_04.png','v_01_jiekai_05.png','v_01_jiekai_06.png','v_01_jiekai_07.png','v_01_jiekai_08.png','v_01_jiekai_09.png','v_01_jiekai_10.png'], scene:'', annotation:'' },
+  { num:'02', title:'Flight To Paris (直飞巴黎)', feat:'', images:['t02_paris_v1_gpt2.png','t02b_paris_gpt2.png','t02c_paris_gpt2.png','t02d_paris_gpt2.png','v_02_paris_01.png','v_02_paris_02.png','v_02_paris_03.png','v_02_paris_04.png','v_02_paris_05.png','v_02_paris_06.png','v_02_paris_07.png','v_02_paris_08.png','v_02_paris_09.png','v_02_paris_10.png'], scene:'', annotation:'' },
+  { num:'03', title:'蜂蜜', feat:'feat. jolae & Jeriyaki', images:['t03_honey_v1_gpt2.png','t03b_honey_gpt2.png','t03c_honey_gpt2.png','t03d_honey_gpt2.png','v_03_honey_01.png','v_03_honey_02.png','v_03_honey_03.png','v_03_honey_04.png','v_03_honey_05.png','v_03_honey_06.png','v_03_honey_07.png','v_03_honey_08.png','v_03_honey_09.png','v_03_honey_10.png'], scene:'', annotation:'' },
+  { num:'04', title:'象形文字', feat:'', images:['t04_hieroglyph_v1_gpt2.png','t04b_hieroglyph_gpt2.png','t04c_hieroglyph_gpt2.png','t04d_hieroglyph_gpt2.png','v_04_hieroglyph_01.png','v_04_hieroglyph_02.png','v_04_hieroglyph_03.png','v_04_hieroglyph_04.png','v_04_hieroglyph_05.png','v_04_hieroglyph_06.png','v_04_hieroglyph_07.png','v_04_hieroglyph_08.png','v_04_hieroglyph_09.png','v_04_hieroglyph_10.png'], scene:'', annotation:'' },
+  { num:'05', title:'捕风捉影', feat:'feat. 马马魚子', images:['t05_catch_wind_v1_gpt2.png','t05b_catch_wind_gpt2.png','t05c_catch_wind_gpt2.png','t05d_catch_wind_gpt2.png','v_05_flight_01.png','v_05_flight_02.png','v_05_flight_03.png','v_05_flight_04.png','v_05_flight_05.png','v_05_flight_06.png','v_05_flight_07.png','v_05_flight_08.png','v_05_flight_09.png','v_05_flight_10.png'], scene:'', annotation:'' },
+  { num:'06', title:'得到你的爱', feat:'feat. LimboLimbs & G3GE', images:['t06_love_v1_gpt2.png','t06b_love_gpt2.png','t06c_love_gpt2.png','t06d_love_gpt2.png','v_06_love_01.png','v_06_love_02.png','v_06_love_03.png','v_06_love_04.png','v_06_love_05.png','v_06_love_06.png','v_06_love_07.png','v_06_love_08.png','v_06_love_09.png','v_06_love_10.png'], scene:'', annotation:'' },
+  { num:'07', title:'新咒语', feat:'', images:['t07_spell_v1_gpt2.png','t07b_spell_gpt2.png','t07c_spell_gpt2.png','t07d_spell_gpt2.png','v_07_spell_01.png','v_07_spell_02.png','v_07_spell_03.png','v_07_spell_04.png','v_07_spell_05.png','v_07_spell_06.png','v_07_spell_07.png','v_07_spell_08.png','v_07_spell_09.png','v_07_spell_10.png'], scene:'', annotation:'' },
   { num:'08', title:'吉卜力音乐', feat:'未完成demo', images:['t08_ghibli_v1_gpt2.png','t08b_ghibli_gpt2.png','t08c_ghibli_gpt2.png','t08d_ghibli_gpt2.png'], scene:'', annotation:'' },
-  { num:'09', title:'销声匿迹', feat:'feat. hpsb & jackzebra', images:['t09_vanish_v1_gpt2.png','t09b_vanish_gpt2.png','t09c_vanish_gpt2.png','t09d_vanish_gpt2.png'], scene:'', annotation:'' },
-  { num:'10', title:'Dream Big (做大梦)', feat:'', images:['t10_dream_v1_gpt2.png','t10b_dream_gpt2.png','t10c_dream_gpt2.png','t10d_dream_gpt2.png'], scene:'', annotation:'' },
+  { num:'09', title:'销声匿迹', feat:'feat. hpsb & jackzebra', images:['t09_vanish_v1_gpt2.png','t09b_vanish_gpt2.png','t09c_vanish_gpt2.png','t09d_vanish_gpt2.png','v_09_vanish_01.png','v_09_vanish_02.png','v_09_vanish_03.png','v_09_vanish_04.png','v_09_vanish_05.png','v_09_vanish_06.png','v_09_vanish_07.png','v_09_vanish_08.png','v_09_vanish_09.png','v_09_vanish_10.png'], scene:'', annotation:'' },
+  { num:'10', title:'Dream Big (做大梦)', feat:'', images:['t10_dream_v1_gpt2.png','t10b_dream_gpt2.png','t10c_dream_gpt2.png','t10d_dream_gpt2.png','v_10_dream_01.png','v_10_dream_02.png','v_10_dream_03.png','v_10_dream_04.png','v_10_dream_05.png','v_10_dream_06.png','v_10_dream_07.png','v_10_dream_08.png','v_10_dream_09.png','v_10_dream_10.png'], scene:'', annotation:'' },
   { num:'11', title:'你跳着舞，我唱着歌', feat:'', images:['t11_nightcar_v1_gpt2.png','t11b_nightcar_gpt2.png','t11c_nightcar_gpt2.png','t11d_nightcar_gpt2.png'], scene:'', annotation:'' },
-  { num:'12', title:'看完花火再回', feat:'', images:['t12_fireworks_v1_gpt2.png','t12b_fireworks_gpt2.png','t12c_fireworks_gpt2.png','t12d_fireworks_gpt2.png'], scene:'', annotation:'' },
+  { num:'12', title:'看完花火再回', feat:'', images:['t12_fireworks_v1_gpt2.png','t12b_fireworks_gpt2.png','t12c_fireworks_gpt2.png','t12d_fireworks_gpt2.png','v_12_fireworks_01.png','v_12_fireworks_02.png','v_12_fireworks_03.png','v_12_fireworks_04.png','v_12_fireworks_05.png','v_12_fireworks_06.png','v_12_fireworks_07.png','v_12_fireworks_08.png','v_12_fireworks_09.png','v_12_fireworks_10.png'], scene:'', annotation:'' },
 ];
 
 const AUDIO_MAP = {
@@ -457,9 +457,9 @@ TRACKS.forEach(t => {
     <div class="scene-line" contenteditable="true" data-field="scene_${t.num}" placeholder="点击写场景描述..."></div>
     <div class="concepts" data-drop-target="track-${t.num}">
       ${t.images.map(img => `
-        <div class="concept-img" draggable="true" data-full="images/${img}" data-thumb="images/${img.replace('.png','.webp')}" data-origin="track-${t.num}">
-          <img src="images/${img.replace('.png','.webp')}" alt="${t.title}" loading="lazy">
-          <div class="label">${img.replace('_gpt2.png','').replace(/_/g,' ')}</div>
+        <div class="concept-img" draggable="true" data-full="images/${img}" data-thumb="${img.startsWith('v_') ? 'images/thumbs/'+img.replace('.png','.webp') : 'images/'+img.replace('.png','.webp')}" data-origin="track-${t.num}">
+          <img src="${img.startsWith('v_') ? 'images/thumbs/'+img.replace('.png','.webp') : 'images/'+img.replace('.png','.webp')}" alt="${t.title}" loading="lazy" onerror="this.src='images/'+this.closest('.concept-img').dataset.full.split('/').pop()">
+          <div class="label">${img.replace('_gpt2.png','').replace(/_/g,' ').replace(/^v_\d+_/, '')}</div>
           <button class="remove-btn" onclick="event.stopPropagation();removeImage(this.closest('.concept-img'))">×</button>
         </div>
       `).join('')}
