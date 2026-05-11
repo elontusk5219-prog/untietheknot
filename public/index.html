@@ -863,10 +863,19 @@ function applyArrangements() {
     const arr = siteData[`arrangement_${zoneId}`];
     if (!arr || !Array.isArray(arr)) return;
 
+    // Collect currently rendered images (from TRACKS data)
+    const currentCards = [...grid.querySelectorAll('.concept-img')];
+    const currentFulls = new Set(currentCards.map(c => c.dataset.full));
+    const savedFulls = new Set(arr.map(a => a.full));
+
+    // Find new images that weren't in saved arrangement (newly added variants)
+    const newCards = currentCards.filter(c => !savedFulls.has(c.dataset.full));
+
     // Remove existing concept-imgs, keep the drop hint
     grid.querySelectorAll('.concept-img').forEach(c => c.remove());
     const hint = grid.querySelector('.drop-hint');
 
+    // Restore saved arrangement
     arr.forEach(item => {
       const card = document.createElement('div');
       card.className = 'concept-img';
@@ -874,7 +883,13 @@ function applyArrangements() {
       card.dataset.full = item.full;
       card.dataset.thumb = item.thumb;
       card.dataset.origin = zoneId;
-      card.innerHTML = `<img src="${item.thumb}" alt="" loading="lazy"><div class="label">${item.label}</div><button class="remove-btn" onclick="event.stopPropagation();removeImage(this.closest('.concept-img'))">×</button>`;
+      card.innerHTML = `<img src="${item.thumb}" alt="" loading="lazy" onerror="this.src=this.closest('.concept-img').dataset.full"><div class="label">${item.label}</div><button class="remove-btn" onclick="event.stopPropagation();removeImage(this.closest('.concept-img'))">×</button>`;
+      grid.insertBefore(card, hint);
+    });
+
+    // Append new images that weren't in saved arrangement
+    newCards.forEach(card => {
+      card.dataset.origin = zoneId;
       grid.insertBefore(card, hint);
     });
   });
