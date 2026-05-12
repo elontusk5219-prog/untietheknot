@@ -107,7 +107,7 @@ export function Track01Scene() {
           opacity: aOpacity,
           transition: `opacity ${CROSS_FADE_MS}ms ease-in-out`,
           filter: 'brightness(0.92) saturate(1.05)',
-          objectPosition: 'center 10%',
+          objectPosition: 'center top',
           zIndex: aIsFront ? 2 : 1,
         }}
       />
@@ -121,7 +121,7 @@ export function Track01Scene() {
           opacity: bOpacity,
           transition: `opacity ${CROSS_FADE_MS}ms ease-in-out`,
           filter: 'brightness(0.92) saturate(1.05)',
-          objectPosition: 'center 10%',
+          objectPosition: 'center top',
           zIndex: aIsFront ? 1 : 2,
         }}
       />
