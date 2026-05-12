@@ -11,7 +11,7 @@ const FLASHBACK_CLIPS = [
 ]
 const CLIP_DURATION_MS = 5000
 const CROSS_FADE_MS    = 700
-const TOTAL_MS         = 25000
+const TOTAL_MS         = 24000
 
 type Phase = 'loading' | 'flashback' | 'fading'
 
@@ -107,7 +107,7 @@ export function Track01Scene() {
           opacity: aOpacity,
           transition: `opacity ${CROSS_FADE_MS}ms ease-in-out`,
           filter: 'brightness(0.92) saturate(1.05)',
-          objectPosition: 'center 25%',
+          objectPosition: 'center 10%',
           zIndex: aIsFront ? 2 : 1,
         }}
       />
@@ -121,7 +121,7 @@ export function Track01Scene() {
           opacity: bOpacity,
           transition: `opacity ${CROSS_FADE_MS}ms ease-in-out`,
           filter: 'brightness(0.92) saturate(1.05)',
-          objectPosition: 'center 25%',
+          objectPosition: 'center 10%',
           zIndex: aIsFront ? 1 : 2,
         }}
       />
