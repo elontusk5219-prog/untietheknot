@@ -4,55 +4,6 @@ import { usePlayerStore } from '@/store/usePlayerStore'
 
 const BASE = import.meta.env.BASE_URL
 
-/** 漂浮的结 SVG — 旧编手绳风格线稿 */
-function FloatingKnot() {
-  return (
-    <div
-      className="pointer-events-none select-none"
-      style={{
-        animation: 'knot-float 5s ease-in-out infinite',
-        filter: 'drop-shadow(0 0 18px rgba(180,140,100,0.35))',
-      }}
-    >
-      <svg
-        viewBox="-85 -95 170 210"
-        width="200"
-        height="240"
-        fill="none"
-        stroke="#c8a97a"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        opacity="0.82"
-      >
-        {/* 上环 */}
-        <path d="M -13,-22 C -38,-50 -32,-82 0,-85 C 32,-82 38,-50 13,-22" />
-        {/* 右环 */}
-        <path d="M 22,-13 C 50,-38 82,-32 85,0 C 82,32 50,38 22,13" />
-        {/* 下环 */}
-        <path d="M 13,22 C 38,50 32,82 0,85 C -32,82 -38,50 -13,22" />
-        {/* 左环 */}
-        <path d="M -22,13 C -50,38 -82,32 -85,0 C -82,-32 -50,-38 -22,-13" />
-        {/* 中心编织区 */}
-        <ellipse cx="0" cy="0" rx="18" ry="18" strokeOpacity="0.6" />
-        <path d="M -18,0 C -9,-10 9,-10 18,0" strokeOpacity="0.5" />
-        <path d="M -18,0 C -9,10 9,10 18,0" strokeOpacity="0.5" />
-        <path d="M 0,-18 C 10,-9 10,9 0,18" strokeOpacity="0.4" />
-        <path d="M 0,-18 C -10,-9 -10,9 0,18" strokeOpacity="0.4" />
-        {/* 两条尾线 */}
-        <path d="M -9,18 C -11,45 -9,68 -7,95 C -6,105 -8,108 -7,112" strokeOpacity="0.7" />
-        <path d="M 9,18 C 11,45 9,68 7,95 C 6,105 8,108 7,112" strokeOpacity="0.7" />
-      </svg>
-
-      <style>{`
-        @keyframes knot-float {
-          0%,100% { transform: translateY(0px) rotate(-1deg); }
-          50%      { transform: translateY(-14px) rotate(1deg); }
-        }
-      `}</style>
-    </div>
-  )
-}
 
 export function TracklistScene() {
   const navigate = useNavigate()
@@ -101,15 +52,7 @@ export function TracklistScene() {
         </button>
       </div>
 
-      {/* ── 漂浮的结（走廊正中） ──────────────────────────────────── */}
-      <div
-        className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-        style={{ zIndex: 5 }}
-      >
-        <FloatingKnot />
-      </div>
-
-      {/* ── 12 列竖排歌单 ─────────────────────────────────────────── */}
+{/* ── 12 列竖排歌单 ─────────────────────────────────────────── */}
       <div className="absolute inset-0 flex items-center justify-center px-10" style={{ zIndex: 8 }}>
         <div className="flex flex-row-reverse gap-5 md:gap-7">
           {TRACKS.map((t, i) => (
