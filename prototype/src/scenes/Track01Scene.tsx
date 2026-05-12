@@ -5,16 +5,18 @@ const BASE = import.meta.env.BASE_URL
 const FLASHBACK_CLIPS = [
   `${BASE}t01_flash_A_wrist.mp4`,
   `${BASE}t01_flash_B_sitting.mp4`,
-  `${BASE}t01_flash_B_running.mp4`,
+  `${BASE}t01_flash_F_running.mp4`,   // 眼镜女孩侧面特写
+  `${BASE}t01_flash_H_running.mp4`,   // 短发女孩侧面特写
   `${BASE}t01_flash_C_field.mp4`,
   `${BASE}t01_flash_D_fence.mp4`,
-  `${BASE}t01_flash_G_transition.mp4`,  // field→dark 转场 clip
+  `${BASE}t01_flash_B_running.mp4`,
+  `${BASE}t01_flash_G_transition.mp4`, // field→dark 转场 clip
 ]
-const CLIP_DURATION_MS    = 4000
-const CROSS_FADE_MS       = 700
-// 5 clips × 4s = 20s，+1s 转场 clip（4s 素材 4× 快放）= 21s
-const TOTAL_MS            = 21000
-const TRANSITION_CLIP_IDX = 5   // FLASHBACK_CLIPS 最后一个
+const CLIP_DURATION_MS    = 3000
+const CROSS_FADE_MS       = 600
+// 7 clips × 3s = 21s，+1s 转场 clip（4s 素材 4× 快放）= 22s
+const TOTAL_MS            = 22000
+const TRANSITION_CLIP_IDX = 7   // FLASHBACK_CLIPS 最后一个
 
 type Phase = 'waiting' | 'flashback' | 'fading'
 
