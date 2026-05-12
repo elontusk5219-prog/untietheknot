@@ -13,16 +13,14 @@ const CLIP_DURATION_MS = 5000
 const CROSS_FADE_MS    = 700
 const TOTAL_MS         = 24000
 
-type Phase = 'loading' | 'flashback' | 'fading'
+type Phase = 'waiting' | 'flashback' | 'fading'
 
 export function Track01Scene() {
   const navigate = useNavigate()
 
-  const [phase,     setPhase]    = useState<Phase>('loading')
+  const [phase,     setPhase]    = useState<Phase>('waiting')
   const [clipIndex, setClipIndex] = useState(0)
   const [showNext,  setShowNext]  = useState(false)
-  // 用户点击后音频解锁，提示消失
-  const [unlocked,  setUnlocked]  = useState(false)
 
   const videoARef = useRef<HTMLVideoElement>(null)
   const videoBRef = useRef<HTMLVideoElement>(null)
@@ -31,32 +29,33 @@ export function Track01Scene() {
   const aOpacity = phase !== 'flashback' ? 0 : (aIsFront || showNext) ? 1 : 0
   const bOpacity = phase !== 'flashback' ? 0 : (!aIsFront || showNext) ? 1 : 0
 
-  // ─── 初始化：等 canplay 再开始计时 ──────────────────────────────
+  // ─── 初始化：预加载 src，但不播放 ───────────────────────────────
   useEffect(() => {
     const va = videoARef.current
     const vb = videoBRef.current
     if (!va || !vb) return
     va.src = FLASHBACK_CLIPS[0]
     vb.src = FLASHBACK_CLIPS[1]
-
-    const start = () => {
-      va.play().catch(() => {})
-      setPhase('flashback')
-    }
-    va.addEventListener('canplay', start, { once: true })
-    const fallback = window.setTimeout(start, 5000)
-    return () => { va.removeEventListener('canplay', start); clearTimeout(fallback) }
   }, [])
 
-  // ─── 25s 后黑幕 + 立刻跳目录 ────────────────────────────────────
+  // ─── 点击：视频 + 音频同时启动 ──────────────────────────────────
+  const handleClick = useCallback(() => {
+    if (phase !== 'waiting') return
+    const va = videoARef.current
+    const audio = document.querySelector('audio') as HTMLAudioElement | null
+    if (va) va.play().catch(() => {})
+    if (audio) audio.play().catch(() => {})
+    setPhase('flashback')
+  }, [phase])
+
+  // ─── 24s 后黑幕 + 跳目录 ────────────────────────────────────────
   useEffect(() => {
     if (phase !== 'flashback') return
-    // 黑幕淡入同时立刻导航，TracklistScene 在黑幕下渲染好再淡出
-    const tFade = window.setTimeout(() => {
+    const t = window.setTimeout(() => {
       setPhase('fading')
       navigate('/tracklist')
     }, TOTAL_MS)
-    return () => clearTimeout(tFade)
+    return () => clearTimeout(t)
   }, [phase, navigate])
 
   // ─── 闪回轮播 ───────────────────────────────────────────────────
@@ -84,18 +83,9 @@ export function Track01Scene() {
     incoming?.play().catch(() => {})
   }, [showNext, phase, aIsFront])
 
-  // ─── 点击：解锁音频 + 隐藏提示 ───────────────────────────────────
-  const handleClick = useCallback(() => {
-    const audio = document.querySelector('audio') as HTMLAudioElement | null
-    if (audio) {
-      audio.play().catch(() => {})
-    }
-    setUnlocked(true)
-  }, [])
-
   return (
     <div
-      className="relative h-full w-full overflow-hidden bg-ink-900"
+      className="relative h-full w-full overflow-hidden bg-ink-900 cursor-pointer"
       onClick={handleClick}
     >
       {/* ── 视频 A ─────────────────────────────────────────────── */}
@@ -134,31 +124,17 @@ export function Track01Scene() {
         style={{ zIndex: 3 }}
       />
 
-      {/* ── 音频解锁提示（未点击时常显）────────────────────────── */}
+      {/* ── 点击提示（waiting 阶段常显）─────────────────────────── */}
       <div
         className="pointer-events-none absolute inset-0 flex items-end justify-center pb-10 select-none"
         style={{
           zIndex: 10,
-          opacity: unlocked ? 0 : 1,
+          opacity: phase === 'waiting' ? 1 : 0,
           transition: 'opacity 0.8s ease',
         }}
       >
         <div className="font-mincho text-[11px] tracking-[0.6em] text-mist-200/50 animate-pulse">
           點 擊 播 放
-        </div>
-      </div>
-
-      {/* ── 加载中（loading 阶段）──────────────────────────────── */}
-      <div
-        className="pointer-events-none absolute inset-0 flex items-center justify-center select-none"
-        style={{
-          zIndex: 10,
-          opacity: phase === 'loading' ? 1 : 0,
-          transition: 'opacity 0.5s',
-        }}
-      >
-        <div className="font-mincho text-[10px] tracking-[0.8em] text-mist-300/25 animate-pulse">
-          載　入　中
         </div>
       </div>
 
