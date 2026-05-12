@@ -29,13 +29,13 @@ export function Track01Scene() {
   const aOpacity = phase !== 'flashback' ? 0 : (aIsFront || showNext) ? 1 : 0
   const bOpacity = phase !== 'flashback' ? 0 : (!aIsFront || showNext) ? 1 : 0
 
-  // ─── 初始化：预加载 src，但不播放 ───────────────────────────────
+  // ─── 初始化：预加载 src，load() 确保从头开始 ────────────────────
   useEffect(() => {
     const va = videoARef.current
     const vb = videoBRef.current
     if (!va || !vb) return
-    va.src = FLASHBACK_CLIPS[0]
-    vb.src = FLASHBACK_CLIPS[1]
+    va.src = FLASHBACK_CLIPS[0]; va.load()
+    vb.src = FLASHBACK_CLIPS[1]; vb.load()
   }, [])
 
   // ─── 点击：视频 + 音频同时启动 ──────────────────────────────────
@@ -73,7 +73,7 @@ export function Track01Scene() {
   useEffect(() => {
     if (phase !== 'flashback' || clipIndex === 0) return
     const back = aIsFront ? videoBRef.current : videoARef.current
-    if (back) back.src = FLASHBACK_CLIPS[(clipIndex + 1) % FLASHBACK_CLIPS.length]
+    if (back) { back.src = FLASHBACK_CLIPS[(clipIndex + 1) % FLASHBACK_CLIPS.length]; back.load() }
   }, [clipIndex, phase, aIsFront])
 
   // ─── 播放淡入中的视频 ────────────────────────────────────────────
