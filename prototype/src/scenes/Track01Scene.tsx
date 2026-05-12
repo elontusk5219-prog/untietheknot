@@ -108,6 +108,7 @@ export function Track01Scene() {
           opacity: aOpacity,
           transition: `opacity ${CROSS_FADE_MS}ms ease-in-out`,
           filter: 'brightness(0.92) saturate(1.05)',
+          animation: phase === 'flashback' ? 'handheld 3.2s ease-in-out infinite' : 'none',
           zIndex: aIsFront ? 2 : 1,
         }}
       />
@@ -122,6 +123,7 @@ export function Track01Scene() {
           opacity: bOpacity,
           transition: `opacity ${CROSS_FADE_MS}ms ease-in-out`,
           filter: 'brightness(0.92) saturate(1.05)',
+          animation: phase === 'flashback' ? 'handheld 3.2s ease-in-out infinite 0.4s' : 'none',
           zIndex: aIsFront ? 1 : 2,
         }}
       />
@@ -144,6 +146,18 @@ export function Track01Scene() {
           點 擊 播 放
         </div>
       </div>
+
+      <style>{`
+        @keyframes handheld {
+          0%   { transform: translate(0px,   0px)  rotate(0deg)    scale(1.04); }
+          18%  { transform: translate(-4px,  3px)  rotate(-0.5deg) scale(1.04); }
+          35%  { transform: translate(3px,  -2px)  rotate(0.4deg)  scale(1.04); }
+          50%  { transform: translate(-2px,  4px)  rotate(-0.3deg) scale(1.04); }
+          65%  { transform: translate(4px,  -3px)  rotate(0.5deg)  scale(1.04); }
+          82%  { transform: translate(-3px,  2px)  rotate(-0.4deg) scale(1.04); }
+          100% { transform: translate(0px,   0px)  rotate(0deg)    scale(1.04); }
+        }
+      `}</style>
 
       {/* 转场黑幕 */}
       <div
