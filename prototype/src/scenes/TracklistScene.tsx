@@ -18,7 +18,7 @@ export function TracklistScene() {
       <div
         className="absolute inset-0 bg-center bg-cover"
         style={{
-          backgroundImage: 'url(/entry_plate.png)',
+          backgroundImage: `url(${import.meta.env.BASE_URL}entry_plate.png)`,
           filter: 'brightness(0.32) blur(40px) saturate(0.7)',
           transform: 'scale(1.3)',
         }}
