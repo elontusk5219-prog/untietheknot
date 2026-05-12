@@ -9,7 +9,7 @@ const FLASHBACK_CLIPS = [
   `${BASE}t01_flash_C_field.mp4`,
   `${BASE}t01_flash_D_fence.mp4`,
 ]
-const CLIP_DURATION_MS = 5000
+const CLIP_DURATION_MS = 4000
 const CROSS_FADE_MS    = 700
 const TOTAL_MS         = 22000
 
