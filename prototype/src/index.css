@@ -1,0 +1,55 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-mincho: 'Noto Serif JP', 'Noto Serif SC', 'Songti SC', 'STSong',
+    'SimSun', serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+  --color-ink-900: #0a0a0d;
+  --color-ink-800: #131319;
+  --color-ink-700: #1d1d24;
+  --color-mist-300: #b8b3c0;
+  --color-mist-200: #d6d2db;
+  --color-ember: #c98a6b;
+  --color-thread-purple: #6f5d77;
+  --color-thread-ochre: #b08a4f;
+  --color-thread-blue: #6e7d8a;
+  --color-thread-pink: #b48a8e;
+  --color-thread-moss: #7a8264;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background: var(--color-ink-900);
+    color: var(--color-mist-200);
+    overflow: hidden;
+    font-family: var(--font-sans);
+  }
+
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background: var(--color-ember);
+    color: var(--color-ink-900);
+  }
+}
+
+@utility writing-vertical {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  white-space: nowrap;
+}
+
+@utility writing-vertical-mixed {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}

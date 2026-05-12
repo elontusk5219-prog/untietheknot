@@ -6,3 +6,4 @@ server/data/*.db
 .DS_Store
 *.log
 CLAUDE.md
+prototype/public_archive/
