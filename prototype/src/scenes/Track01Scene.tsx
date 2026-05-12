@@ -15,6 +15,16 @@ const TOTAL_MS         = 22000
 
 type Phase = 'waiting' | 'flashback' | 'fading'
 
+// 等 canplay 再 play，避免黑帧
+function playWhenReady(v: HTMLVideoElement) {
+  if (v.readyState >= 3) {
+    v.play().catch(() => {})
+  } else {
+    const handler = () => { v.play().catch(() => {}); v.removeEventListener('canplay', handler) }
+    v.addEventListener('canplay', handler)
+  }
+}
+
 export function Track01Scene() {
   const navigate = useNavigate()
 
@@ -29,13 +39,13 @@ export function Track01Scene() {
   const aOpacity = phase !== 'flashback' ? 0 : (aIsFront || showNext) ? 1 : 0
   const bOpacity = phase !== 'flashback' ? 0 : (!aIsFront || showNext) ? 1 : 0
 
-  // ─── 初始化：预加载 src，load() 确保从头开始 ────────────────────
+  // ─── 初始化：预加载，不调 load()，src 赋值自动重置 currentTime ────
   useEffect(() => {
     const va = videoARef.current
     const vb = videoBRef.current
     if (!va || !vb) return
-    va.src = FLASHBACK_CLIPS[0]; va.load()
-    vb.src = FLASHBACK_CLIPS[1]; vb.load()
+    va.src = FLASHBACK_CLIPS[0]
+    vb.src = FLASHBACK_CLIPS[1]
   }, [])
 
   // ─── 点击：视频 + 音频同时启动 ──────────────────────────────────
@@ -43,12 +53,12 @@ export function Track01Scene() {
     if (phase !== 'waiting') return
     const va = videoARef.current
     const audio = document.querySelector('audio') as HTMLAudioElement | null
-    if (va) { va.currentTime = 0; va.play().catch(() => {}) }
+    if (va) playWhenReady(va)
     if (audio) audio.play().catch(() => {})
     setPhase('flashback')
   }, [phase])
 
-  // ─── 24s 后黑幕 + 跳目录 ────────────────────────────────────────
+  // ─── 22s 后黑幕 + 跳目录 ────────────────────────────────────────
   useEffect(() => {
     if (phase !== 'flashback') return
     const t = window.setTimeout(() => {
@@ -69,18 +79,18 @@ export function Track01Scene() {
     return () => { clearTimeout(tFade); clearTimeout(tNext) }
   }, [clipIndex, phase])
 
-  // ─── 新后景 src ──────────────────────────────────────────────────
+  // ─── 新后景 src（src 赋值自动 reset currentTime，不需要 load()）──
   useEffect(() => {
     if (phase !== 'flashback' || clipIndex === 0) return
     const back = aIsFront ? videoBRef.current : videoARef.current
-    if (back) { back.src = FLASHBACK_CLIPS[(clipIndex + 1) % FLASHBACK_CLIPS.length]; back.load() }
+    if (back) back.src = FLASHBACK_CLIPS[(clipIndex + 1) % FLASHBACK_CLIPS.length]
   }, [clipIndex, phase, aIsFront])
 
-  // ─── 播放淡入中的视频 ────────────────────────────────────────────
+  // ─── 播放淡入中的视频，等 canplay 确保无黑帧 ────────────────────
   useEffect(() => {
     if (phase !== 'flashback' || !showNext) return
     const incoming = aIsFront ? videoBRef.current : videoARef.current
-    if (incoming) { incoming.currentTime = 0; incoming.play().catch(() => {}) }
+    if (incoming) playWhenReady(incoming)
   }, [showNext, phase, aIsFront])
 
   return (
@@ -88,7 +98,6 @@ export function Track01Scene() {
       className="relative h-full w-full overflow-hidden bg-ink-900 cursor-pointer"
       onClick={handleClick}
     >
-      {/* ── 视频 A ─────────────────────────────────────────────── */}
       <video
         ref={videoARef}
         loop muted playsInline preload="auto"
@@ -103,7 +112,6 @@ export function Track01Scene() {
         }}
       />
 
-      {/* ── 视频 B ─────────────────────────────────────────────── */}
       <video
         ref={videoBRef}
         loop muted playsInline preload="auto"
@@ -118,13 +126,12 @@ export function Track01Scene() {
         }}
       />
 
-      {/* ── vignette ───────────────────────────────────────────── */}
       <div
         className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink-900/20 via-transparent to-ink-900/60"
         style={{ zIndex: 3 }}
       />
 
-      {/* ── 点击提示（waiting 阶段常显）─────────────────────────── */}
+      {/* 点击提示 */}
       <div
         className="pointer-events-none absolute inset-0 flex items-end justify-center pb-10 select-none"
         style={{
@@ -138,7 +145,7 @@ export function Track01Scene() {
         </div>
       </div>
 
-      {/* ── 跳转时黑幕（fading 阶段）───────────────────────────── */}
+      {/* 转场黑幕 */}
       <div
         className="pointer-events-none absolute inset-0 bg-black"
         style={{
