@@ -8,10 +8,13 @@ const FLASHBACK_CLIPS = [
   `${BASE}t01_flash_B_running.mp4`,
   `${BASE}t01_flash_C_field.mp4`,
   `${BASE}t01_flash_D_fence.mp4`,
+  `${BASE}t01_flash_G_transition.mp4`,  // field→dark 转场 clip
 ]
-const CLIP_DURATION_MS = 4000
-const CROSS_FADE_MS    = 700
-const TOTAL_MS         = 22000
+const CLIP_DURATION_MS    = 4000
+const CROSS_FADE_MS       = 700
+// 5 clips × 4s = 20s，+1s 转场 clip（4s 素材 4× 快放）= 21s
+const TOTAL_MS            = 21000
+const TRANSITION_CLIP_IDX = 5   // FLASHBACK_CLIPS 最后一个
 
 type Phase = 'waiting' | 'flashback' | 'fading'
 
@@ -86,12 +89,16 @@ export function Track01Scene() {
     if (back) back.src = FLASHBACK_CLIPS[(clipIndex + 1) % FLASHBACK_CLIPS.length]
   }, [clipIndex, phase, aIsFront])
 
-  // ─── 播放淡入中的视频，等 canplay 确保无黑帧 ────────────────────
+  // ─── 播放淡入中的视频，转场 clip 4× 快放 ──────────────────────
   useEffect(() => {
     if (phase !== 'flashback' || !showNext) return
     const incoming = aIsFront ? videoBRef.current : videoARef.current
-    if (incoming) playWhenReady(incoming)
-  }, [showNext, phase, aIsFront])
+    if (!incoming) return
+    // 下一个 clip 是转场素材时，4× 快放填满 1s 窗口
+    const nextIdx = (clipIndex + 1) % FLASHBACK_CLIPS.length
+    incoming.playbackRate = nextIdx === TRANSITION_CLIP_IDX ? 4 : 1
+    playWhenReady(incoming)
+  }, [showNext, phase, aIsFront, clipIndex])
 
   return (
     <div
@@ -159,14 +166,12 @@ export function Track01Scene() {
         }
       `}</style>
 
-      {/* 转场黑幕 */}
-      <div
-        className="pointer-events-none absolute inset-0 bg-black"
-        style={{
-          zIndex: 20,
-          opacity: phase === 'fading' ? 1 : 0,
-          transition: 'opacity 0.8s ease-in',
-        }}
+      {/* 预加载走廊视频，navigate 时已在缓存里，无黑屏 */}
+      <video
+        src={`${BASE}tracklist_corridor.mp4`}
+        preload="auto"
+        muted
+        style={{ display: 'none' }}
       />
     </div>
   )
