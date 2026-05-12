@@ -40,7 +40,7 @@ function GlobalAudio() {
   return (
     <audio
       ref={audioRef}
-      src="/t01_audio.mp3"
+      src={`${import.meta.env.BASE_URL}t01_audio.mp3`}
       preload="auto"
       autoPlay
       loop

@@ -34,13 +34,13 @@ export function EntryScene() {
     >
       {/* 入口 plate —— Kling FLF 循环视频（首尾帧都是 v16，无缝接） */}
       <video
-        src="/entry_loop.mp4"
+        src={`${import.meta.env.BASE_URL}entry_loop.mp4`}
         autoPlay
         loop
         muted
         playsInline
         preload="auto"
-        poster="/entry_plate.png"
+        poster={`${import.meta.env.BASE_URL}entry_plate.png`}
         aria-hidden
         className="absolute inset-0 h-full w-full select-none transition-all duration-[1400ms] ease-out"
         style={{

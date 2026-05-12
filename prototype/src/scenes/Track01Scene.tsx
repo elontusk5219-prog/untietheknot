@@ -12,12 +12,13 @@ import { useNavigate } from 'react-router-dom'
  * 偶数 clipIndex → A 前景；奇数 → B 前景
  */
 
+const B = import.meta.env.BASE_URL  // '/preview/' prod, '/' dev
 const FLASHBACK_CLIPS = [
-  '/t01_flash_A_wrist.mp4',    // 近景：手腕系绳 (GPT-2)
-  '/t01_flash_B_sitting.mp4',  // 中景：两人坐着 (GPT-2)
-  '/t01_flash_B_running.mp4',  // 中景：金色田野跑步
-  '/t01_flash_C_field.mp4',    // 单人张臂
-  '/t01_flash_D_fence.mp4',    // 铁网
+  `${B}t01_flash_A_wrist.mp4`,
+  `${B}t01_flash_B_sitting.mp4`,
+  `${B}t01_flash_B_running.mp4`,
+  `${B}t01_flash_C_field.mp4`,
+  `${B}t01_flash_D_fence.mp4`,
 ]
 // 5 段 × 4200ms = 21000ms，刚好填满到跳转
 const CLIP_DURATION_MS  = 4200
