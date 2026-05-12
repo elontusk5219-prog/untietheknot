@@ -11,7 +11,7 @@ const FLASHBACK_CLIPS = [
 ]
 const CLIP_DURATION_MS = 5000
 const CROSS_FADE_MS    = 700
-const TOTAL_MS         = 24000
+const TOTAL_MS         = 22000
 
 type Phase = 'waiting' | 'flashback' | 'fading'
 
@@ -43,7 +43,7 @@ export function Track01Scene() {
     if (phase !== 'waiting') return
     const va = videoARef.current
     const audio = document.querySelector('audio') as HTMLAudioElement | null
-    if (va) va.play().catch(() => {})
+    if (va) { va.currentTime = 0; va.play().catch(() => {}) }
     if (audio) audio.play().catch(() => {})
     setPhase('flashback')
   }, [phase])
@@ -80,7 +80,7 @@ export function Track01Scene() {
   useEffect(() => {
     if (phase !== 'flashback' || !showNext) return
     const incoming = aIsFront ? videoBRef.current : videoARef.current
-    incoming?.play().catch(() => {})
+    if (incoming) { incoming.currentTime = 0; incoming.play().catch(() => {}) }
   }, [showNext, phase, aIsFront])
 
   return (
