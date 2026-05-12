@@ -102,12 +102,13 @@ export function Track01Scene() {
       <video
         ref={videoARef}
         loop muted playsInline preload="auto"
-        className="absolute inset-0 h-full w-full object-cover select-none"
+        className="absolute inset-0 h-full w-full select-none"
         style={{
+          objectFit: 'cover',
+          objectPosition: '50% 0%',
           opacity: aOpacity,
           transition: `opacity ${CROSS_FADE_MS}ms ease-in-out`,
           filter: 'brightness(0.92) saturate(1.05)',
-          objectPosition: 'center top',
           zIndex: aIsFront ? 2 : 1,
         }}
       />
@@ -116,12 +117,13 @@ export function Track01Scene() {
       <video
         ref={videoBRef}
         loop muted playsInline preload="auto"
-        className="absolute inset-0 h-full w-full object-cover select-none"
+        className="absolute inset-0 h-full w-full select-none"
         style={{
+          objectFit: 'cover',
+          objectPosition: '50% 0%',
           opacity: bOpacity,
           transition: `opacity ${CROSS_FADE_MS}ms ease-in-out`,
           filter: 'brightness(0.92) saturate(1.05)',
-          objectPosition: 'center top',
           zIndex: aIsFront ? 1 : 2,
         }}
       />
