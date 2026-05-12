@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import { EntryScene } from '@/scenes/EntryScene'
 import { TracklistScene } from '@/scenes/TracklistScene'
 import { TrackScene } from '@/scenes/TrackScene'
 import { Track01Scene } from '@/scenes/Track01Scene'
@@ -52,14 +51,13 @@ function GlobalAudio() {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/preview">
       {/* 一打开就挂载，跨路由持续播放 */}
       <GlobalAudio />
       <Routes>
-        <Route path="/" element={<EntryScene />} />
+        {/* 入口直接是 Track01 金色麦田开场，21s 后切到目录 */}
+        <Route path="/" element={<Track01Scene />} />
         <Route path="/tracklist" element={<TracklistScene />} />
-        {/* Track 01 has its own bespoke scene */}
-        <Route path="/track/1" element={<Track01Scene />} />
         <Route path="/track/:id" element={<TrackScene />} />
       </Routes>
     </BrowserRouter>

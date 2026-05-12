@@ -319,6 +319,7 @@ body {
 <div class="status-bar">
   <span><span class="status-dot" id="dot"></span> <span id="status-text">连接中...</span></span>
   <span id="last-save"></span>
+  <a href="/preview/" style="font-family:'Noto Serif SC',serif;font-size:11px;letter-spacing:0.4em;color:rgba(255,255,255,0.55);text-decoration:none;border:1px solid rgba(255,255,255,0.2);padding:4px 14px;border-radius:2px;transition:all 0.2s;" onmouseover="this.style.color='rgba(255,255,255,0.95)';this.style.borderColor='rgba(255,255,255,0.6)'" onmouseout="this.style.color='rgba(255,255,255,0.55)';this.style.borderColor='rgba(255,255,255,0.2)'">预 览</a>
 </div>
 
 <section class="hero">
@@ -386,8 +387,28 @@ async function loadData() {
   try {
     const res = await fetch('/api/data');
     if (res.ok) {
-      siteData = await res.json();
+      const serverData = await res.json();
       connected = true;
+
+      // One-time sync: if server is empty but localStorage has data, push it up
+      const localRaw = localStorage.getItem('site_data');
+      if (localRaw && Object.keys(serverData).length === 0) {
+        const localData = JSON.parse(localRaw);
+        if (Object.keys(localData).length > 0) {
+          console.log('[sync] pushing localStorage → server…');
+          await fetch('/api/data', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: localRaw,
+          });
+          siteData = localData;
+          console.log('[sync] done ✓');
+        } else {
+          siteData = serverData;
+        }
+      } else {
+        siteData = serverData;
+      }
     }
   } catch(e) {
     // fallback to localStorage

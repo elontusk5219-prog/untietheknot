@@ -1,8 +1,9 @@
 {
-  "buildCommand": "cd prototype && npm install && npm run build",
-  "outputDirectory": "prototype/dist",
+  "buildCommand": "cd prototype && npm install && npm run build && mkdir -p ../public/preview && cp -r dist/. ../public/preview/",
+  "outputDirectory": "public",
   "routes": [
     { "handle": "filesystem" },
+    { "src": "/preview/(.*)", "dest": "/preview/index.html" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
