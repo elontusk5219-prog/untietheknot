@@ -91,10 +91,19 @@ export function TimelineEditor() {
   const [previewDur, setPreviewDur]   = useState(0)
   const [previewPlaying, setPreviewPlaying] = useState(false)
 
-  const timelineRef = useRef<HTMLDivElement>(null)
-  const previewRef  = useRef<HTMLVideoElement>(null)
-  const dragRef     = useRef<DragState>({ type: 'idle' })
-  const trimRafRef  = useRef<number>(0)
+  const timelineRef   = useRef<HTMLDivElement>(null)
+  const previewRef    = useRef<HTMLVideoElement>(null)
+  const dragRef       = useRef<DragState>({ type: 'idle' })
+  const trimRafRef    = useRef<number>(0)
+
+  // ── Sequence playback ─────────────────────────────────────────
+  const [seqPlaying,  setSeqPlaying]  = useState(false)
+  const [seqClipIdx,  setSeqClipIdx]  = useState(-1)
+  const [seqTime,     setSeqTime]     = useState(0)
+  const seqTimeRef    = useRef(0)         // authoritative time (no stale-closure)
+  const seqStartRef   = useRef(0)         // performance.now() anchor
+  const seqClipIdxRef = useRef(-1)        // last loaded clip
+  const seqRafRef     = useRef(0)
 
   const totalMs = cfg.clips.reduce((a, c) => a + c.duration, 0)
   const [audioDurMs, setAudioDurMs] = useState(0)
@@ -122,26 +131,13 @@ export function TimelineEditor() {
     apply({ ...cfg, clips })
   }, [cfg, apply])
 
-  // ── Video preview ─────────────────────────────────────────────
+  // ── Single-clip preview (only when not in sequence mode) ────────
   useEffect(() => {
-    const video = previewRef.current
-    if (!video || selected === null) return
-    const clip = cfg.clips[selected]
-    video.src = `${BASE}${CLIP_SRCS[selected]}`
-    video.playbackRate = clip.speed
-    video.load()
-    const onMeta = () => {
-      setPreviewDur(video.duration)
-      video.currentTime = clip.trimStart
-      setPreviewTime(clip.trimStart)
-    }
-    video.addEventListener('loadedmetadata', onMeta, { once: true })
-    return () => { video.removeEventListener('loadedmetadata', onMeta) }
-  }, [selected])   // intentionally only on selected change — user edits speed separately
+    if (selected !== null && !seqPlaying) loadSingleClip(selected)
+  }, [selected])
 
-  // Sync speed when it changes
   useEffect(() => {
-    if (selected === null) return
+    if (selected === null || seqPlaying) return
     const video = previewRef.current
     if (video) video.playbackRate = cfg.clips[selected].speed
   }, [selected !== null ? cfg.clips[selected]?.speed : null])
@@ -179,25 +175,126 @@ export function TimelineEditor() {
   }, [selected, selected !== null ? cfg.clips[selected]?.trimEnd : 0,
       selected !== null ? cfg.clips[selected]?.trimStart : 0])
 
-  const previewPlayPause = () => {
+  // Return clip index at a given scene time (ms)
+  const clipAtMs = useCallback((ms: number) => {
+    let acc = 0
+    for (let i = 0; i < cfg.clips.length; i++) {
+      if (ms < acc + cfg.clips[i].duration) return i
+      acc += cfg.clips[i].duration
+    }
+    return cfg.clips.length - 1
+  }, [cfg.clips])
+
+  // rAF loop — updates seqTime and fires clip-index changes
+  useEffect(() => {
+    cancelAnimationFrame(seqRafRef.current)
+    if (!seqPlaying) return
+    seqStartRef.current = performance.now() - seqTimeRef.current
+    const tick = () => {
+      const t = Math.min(performance.now() - seqStartRef.current, totalMs)
+      seqTimeRef.current = t
+      setSeqTime(t)
+      const idx = clipAtMs(t)
+      if (idx !== seqClipIdxRef.current) {
+        seqClipIdxRef.current = idx
+        setSeqClipIdx(idx)
+      }
+      if (t < totalMs) {
+        seqRafRef.current = requestAnimationFrame(tick)
+      } else {
+        setSeqPlaying(false)
+      }
+    }
+    seqRafRef.current = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(seqRafRef.current)
+  }, [seqPlaying, totalMs, clipAtMs])
+
+  // Switch video src when the active clip changes during sequence playback
+  useEffect(() => {
+    if (!seqPlaying || seqClipIdx < 0) return
     const video = previewRef.current
     if (!video) return
-    if (video.paused) {
-      if (selected !== null) video.currentTime = cfg.clips[selected].trimStart
+    const clip = cfg.clips[seqClipIdx]
+    video.pause()
+    video.src = `${BASE}${CLIP_SRCS[seqClipIdx]}`
+    video.playbackRate = clip.speed
+    const onMeta = () => {
+      video.currentTime = clip.trimStart
       video.play().catch(() => {})
+    }
+    video.addEventListener('loadedmetadata', onMeta, { once: true })
+    video.load()
+  }, [seqClipIdx, seqPlaying])
+
+  // Load selected clip into preview when not in sequence mode
+  const loadSingleClip = useCallback((idx: number) => {
+    if (seqPlaying) return
+    const video = previewRef.current
+    if (!video) return
+    const clip = cfg.clips[idx]
+    video.src = `${BASE}${CLIP_SRCS[idx]}`
+    video.playbackRate = clip.speed
+    video.load()
+    video.addEventListener('loadedmetadata', () => {
+      setPreviewDur(video.duration)
+      video.currentTime = clip.trimStart
+      setPreviewTime(clip.trimStart)
+    }, { once: true })
+  }, [seqPlaying, cfg.clips])
+
+  const toggleSeq = () => {
+    if (seqPlaying) {
+      // Pause
+      setSeqPlaying(false)
+      previewRef.current?.pause()
     } else {
-      video.pause()
+      // Start or resume
+      if (seqTimeRef.current >= totalMs) {
+        seqTimeRef.current = 0
+        setSeqTime(0)
+        seqClipIdxRef.current = -1
+        setSeqClipIdx(-1)
+      }
+      setSeqPlaying(true)
     }
   }
 
-  const previewStop = () => {
+  const stopSeq = () => {
+    setSeqPlaying(false)
+    setSeqTime(0)
+    seqTimeRef.current = 0
+    seqClipIdxRef.current = -1
+    setSeqClipIdx(-1)
+    previewRef.current?.pause()
+    // Return to single-clip preview
+    if (selected !== null) loadSingleClip(selected)
+  }
+
+  // Scrub the sequence to a given ms position
+  const seekSeq = (ms: number) => {
+    const t = Math.max(0, Math.min(ms, totalMs))
+    seqTimeRef.current = t
+    setSeqTime(t)
+    seqStartRef.current = performance.now() - t
+    const idx = clipAtMs(t)
+    // Compute time-into-clip and seek video
+    let acc = 0
+    for (let i = 0; i < idx; i++) acc += cfg.clips[i].duration
+    const msInClip = t - acc
+    const clip = cfg.clips[idx]
     const video = previewRef.current
-    if (!video) return
-    video.pause()
-    if (selected !== null) {
-      video.currentTime = cfg.clips[selected].trimStart
-      setPreviewTime(cfg.clips[selected].trimStart)
+    if (video) {
+      video.pause()
+      video.src = `${BASE}${CLIP_SRCS[idx]}`
+      video.playbackRate = clip.speed
+      video.load()
+      video.addEventListener('loadedmetadata', () => {
+        video.currentTime = clip.trimStart + (msInClip / 1000) * clip.speed
+        if (seqPlaying) video.play().catch(() => {})
+      }, { once: true })
     }
+    seqClipIdxRef.current = idx
+    setSeqClipIdx(idx)
   }
 
   // ── Pointer events on timeline ────────────────────────────────
@@ -211,6 +308,7 @@ export function TimelineEditor() {
     e.preventDefault()
     ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
     setSelected(idx)
+    if (!seqPlaying) loadSingleClip(idx)
 
     if (zone === 'left') {
       dragRef.current = { type: 'trimLeft', idx, startX: e.clientX, startVal: cfg.clips[idx].trimStart }
@@ -328,36 +426,38 @@ export function TimelineEditor() {
             )}
           </div>
           {/* Playback controls */}
-          <div className="flex shrink-0 items-center gap-3 border-t border-white/8 px-4 py-2">
+          <div className="flex shrink-0 items-center gap-2 border-t border-white/8 px-3 py-2">
             <button
-              onClick={previewPlayPause}
-              className="flex h-7 w-7 items-center justify-center rounded bg-white/8 hover:bg-white/14 transition text-[14px]"
+              onClick={toggleSeq}
+              className="flex h-7 w-7 items-center justify-center rounded bg-white/8 hover:bg-white/14 transition text-[13px]"
+              title="播放完整序列"
             >
-              {previewPlaying ? '⏸' : '▶'}
+              {seqPlaying ? '⏸' : '▶'}
             </button>
             <button
-              onClick={previewStop}
-              className="flex h-7 w-7 items-center justify-center rounded bg-white/8 hover:bg-white/14 transition text-[12px]"
+              onClick={stopSeq}
+              className="flex h-7 w-7 items-center justify-center rounded bg-white/8 hover:bg-white/14 transition text-[11px]"
             >
               ⏹
             </button>
-            {/* Scrub bar */}
-            <div className="relative flex-1 h-1.5 cursor-pointer rounded-full bg-white/10"
+            {/* Scrub bar — shows full sequence position */}
+            <div
+              className="relative flex-1 h-1.5 cursor-pointer rounded-full bg-white/10"
               onClick={(e) => {
-                const video = previewRef.current
-                if (!video || !previewDur) return
                 const rect = e.currentTarget.getBoundingClientRect()
-                const pct = (e.clientX - rect.left) / rect.width
-                video.currentTime = pct * previewDur
+                seekSeq((e.clientX - rect.left) / rect.width * totalMs)
               }}
             >
               <div
-                className="absolute left-0 top-0 h-full rounded-full bg-mist-200/50"
-                style={{ width: previewDur ? `${(previewTime / previewDur) * 100}%` : '0%' }}
+                className="absolute left-0 top-0 h-full rounded-full"
+                style={{
+                  width: `${(seqTime / totalMs) * 100}%`,
+                  background: seqPlaying ? 'rgba(201,168,76,0.7)' : 'rgba(255,255,255,0.35)',
+                }}
               />
             </div>
-            <span className="tabular-nums text-[10px] text-mist-300/45 w-12 text-right">
-              {fmtTime(previewTime)}
+            <span className="tabular-nums text-[10px] text-mist-300/45 w-20 text-right shrink-0">
+              {fmtTime(seqTime / 1000)} / {fmtTime(totalMs / 1000)}
             </span>
           </div>
         </div>
@@ -482,6 +582,26 @@ export function TimelineEditor() {
           onPointerMove={onTimelinePointerMove}
           onPointerUp={onTimelinePointerUp}
         >
+          {/* ── Sequence playhead ── */}
+          {seqTime > 0 && (
+            <div
+              className="pointer-events-none absolute top-0"
+              style={{
+                left: `${(seqTime / timelineMs) * 100}%`,
+                height: 68,
+                borderLeft: '2px solid rgba(255,255,255,0.85)',
+                zIndex: 20,
+              }}
+            >
+              <div
+                className="absolute top-0 text-[8px] tabular-nums whitespace-nowrap px-1"
+                style={{ background: 'rgba(255,255,255,0.85)', color: '#1a1a1f', borderRadius: 2 }}
+              >
+                {fmtTime(seqTime / 1000)}
+              </div>
+            </div>
+          )}
+
           {/* ── Navigate-to-tracklist marker at right edge of clips ── */}
           <div
             className="pointer-events-none absolute top-0"
