@@ -97,6 +97,17 @@ export function TimelineEditor() {
   const trimRafRef  = useRef<number>(0)
 
   const totalMs = cfg.clips.reduce((a, c) => a + c.duration, 0)
+  const [audioDurMs, setAudioDurMs] = useState(0)
+
+  // Load audio duration once so the timeline can show the full song window
+  useEffect(() => {
+    const a = new Audio(`${BASE}t01_audio.mp3`)
+    a.addEventListener('loadedmetadata', () => setAudioDurMs(a.duration * 1000), { once: true })
+    a.load()
+  }, [])
+
+  // Timeline scale = clips + 10% headroom. Audio track shown as mini context bar separately.
+  const timelineMs = totalMs * 1.1
 
   // ── Apply + save ─────────────────────────────────────────────
   const apply = useCallback((next: TimelineConfig) => {
@@ -192,7 +203,7 @@ export function TimelineEditor() {
   // ── Pointer events on timeline ────────────────────────────────
   const getTimelineScale = () => {
     const w = timelineRef.current?.clientWidth ?? 800
-    return totalMs / w   // ms per pixel
+    return timelineMs / w   // ms per pixel
   }
 
   const onTimelinePointerDown = useCallback((e: React.PointerEvent, idx: number, zone: 'left' | 'body' | 'right') => {
@@ -235,7 +246,7 @@ export function TimelineEditor() {
       const newX = e.clientX
       dragRef.current = { ...dr, currentX: newX }
       const containerW = timelineRef.current?.clientWidth ?? 800
-      const msPerPx = totalMs / containerW
+      const msPerPx = timelineMs / containerW
 
       // Find cursor position in ms
       const containerLeft = timelineRef.current!.getBoundingClientRect().left
@@ -446,21 +457,50 @@ export function TimelineEditor() {
       {/* ── Timeline ─────────────────────────────────────────────── */}
       <div className="flex-1 overflow-auto px-5 pt-4 pb-2">
         <div className="flex items-center justify-between mb-2 text-[10px] text-mist-300/35">
-          <span>总时长 <b className="text-mist-200/60">{(totalMs / 1000).toFixed(2)}s</b></span>
-          <span>左柄拖动 = 入点 · 右柄拖动 = 时长 · 中间拖动 = 排序</span>
+          <span>
+            视频 <b className="text-mist-200/60">{(totalMs / 1000).toFixed(2)}s</b>
+            {audioDurMs > 0 && (
+              <>
+                <span className="mx-2 opacity-30">/</span>
+                音频 <b className="text-mist-200/60">{(audioDurMs / 1000).toFixed(2)}s</b>
+                {Math.abs(totalMs - audioDurMs) > 100 && (
+                  <span style={{ color: totalMs > audioDurMs ? '#e07b5a' : '#c9a84c' }} className="ml-2">
+                    {totalMs > audioDurMs ? `超出 ${((totalMs - audioDurMs)/1000).toFixed(2)}s` : `剩余 ${((audioDurMs - totalMs)/1000).toFixed(2)}s`}
+                  </span>
+                )}
+              </>
+            )}
+          </span>
+          <span>左柄 = 入点 · 右柄 = 时长 · 中间拖 = 排序</span>
         </div>
 
-        {/* Clip blocks */}
+        {/* Timeline: audio track + clip track */}
         <div
           ref={timelineRef}
           className="relative w-full"
-          style={{ height: 64 }}
+          style={{ height: 68 }}
           onPointerMove={onTimelinePointerMove}
           onPointerUp={onTimelinePointerUp}
         >
+          {/* ── Navigate-to-tracklist marker at right edge of clips ── */}
+          <div
+            className="pointer-events-none absolute top-0"
+            style={{
+              left: `${(totalMs / timelineMs) * 100}%`,
+              height: 88,
+              borderLeft: '2px solid rgba(224,123,90,0.6)',
+              zIndex: 10,
+            }}
+          >
+            <span className="absolute top-1 text-[8px] tabular-nums whitespace-nowrap" style={{ color: '#e07b5a', left: 3 }}>
+              → 目录
+            </span>
+          </div>
+
+          {/* ── Clip blocks (top row) ── */}
           {cfg.clips.map((clip, i) => {
-            const leftPct = cfg.clips.slice(0, i).reduce((a, c) => a + c.duration, 0) / totalMs * 100
-            const widthPct = clip.duration / totalMs * 100
+            const leftPct = cfg.clips.slice(0, i).reduce((a, c) => a + c.duration, 0) / timelineMs * 100
+            const widthPct = clip.duration / timelineMs * 100
             const isSelected = selected === i
             const isDragging = dragRef.current.type === 'reorder' && dragRef.current.idx === i
             const color = CLIP_COLORS[i]
@@ -543,13 +583,34 @@ export function TimelineEditor() {
         </div>
 
         {/* Ruler */}
-        <div className="relative mt-1 h-5 text-[9px] text-mist-300/25 tabular-nums">
-          {Array.from({ length: Math.ceil(totalMs / 1000) + 1 }, (_, s) => (
-            <span key={s} className="absolute" style={{ left: `${(s * 1000 / totalMs) * 100}%`, transform: 'translateX(-50%)' }}>
+        <div className="relative mt-1 h-4 text-[9px] text-mist-300/25 tabular-nums">
+          {Array.from({ length: Math.ceil(timelineMs / 1000) + 1 }, (_, s) => (
+            <span key={s} className="absolute" style={{ left: `${(s * 1000 / timelineMs) * 100}%`, transform: 'translateX(-50%)' }}>
               {s}s
             </span>
           ))}
         </div>
+
+        {/* Mini song-position bar — shows where scene sits in full track */}
+        {audioDurMs > 0 && (
+          <div className="mt-3 flex items-center gap-2">
+            <span className="shrink-0 text-[9px] text-mist-300/30">全曲</span>
+            <div className="relative flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+              {/* Scene region */}
+              <div
+                className="absolute top-0 h-full rounded-full"
+                style={{
+                  left: 0,
+                  width: `${(totalMs / audioDurMs) * 100}%`,
+                  background: 'rgba(201,168,76,0.5)',
+                }}
+              />
+            </div>
+            <span className="shrink-0 tabular-nums text-[9px] text-mist-300/30">
+              {(totalMs / 1000).toFixed(1)}s / {(audioDurMs / 1000).toFixed(1)}s
+            </span>
+          </div>
+        )}
 
         {/* Clip list */}
         <div className="mt-3 rounded border border-white/6 overflow-hidden">
